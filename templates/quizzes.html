@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Quizzes</h1>
+<ul>
+    <li><a href="{{ url_for('read_quiz', quiz_id=1) }}">Quiz on Arrays</a></li>
+    <li><a href="{{ url_for('read_quiz', quiz_id=2) }}">Quiz on Linked Lists</a></li>
+</ul>
+{% endblock %}

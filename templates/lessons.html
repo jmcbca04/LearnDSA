@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Lessons</h1>
+<ul>
+    <li><a href="{{ url_for('read_lesson', lesson_id=1) }}">Introduction to Data Structures</a></li>
+    <li><a href="{{ url_for('read_lesson', lesson_id=2) }}">Understanding Arrays</a></li>
+    <li><a href="{{ url_for('read_lesson', lesson_id=3) }}">Exploring Linked Lists</a></li>
+    <li><a href="{{ url_for('read_lesson', lesson_id=4) }}">Stacks and Queues</a></li>
+    <li><a href="{{ url_for('read_lesson', lesson_id=5) }}">Trees and Graphs</a></li>
+</ul>
+{% endblock %}
