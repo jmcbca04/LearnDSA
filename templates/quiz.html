@@ -2,12 +2,10 @@
 {% block content %}
 <h1>Quiz {{ quiz_id }}</h1>
 <p>{{ question }}</p>
-<form method="post">
+<form hx-post="{{ url_for('submit_quiz', quiz_id=quiz_id) }}" hx-target="#feedback">
     <label for="answer">Your Answer:</label>
     <input type="text" id="answer" name="answer">
     <button type="submit">Submit</button>
 </form>
-{% if feedback %}
-<p>{{ feedback }}</p>
-{% endif %}
+<div id="feedback"></div>
 {% endblock %}

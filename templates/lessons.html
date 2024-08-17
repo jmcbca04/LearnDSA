@@ -1,11 +1,55 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Lessons</h1>
-<ul>
-    <li><a href="{{ url_for('read_lesson', lesson_id=1) }}">Introduction to Data Structures</a></li>
-    <li><a href="{{ url_for('read_lesson', lesson_id=2) }}">Understanding Arrays</a></li>
-    <li><a href="{{ url_for('read_lesson', lesson_id=3) }}">Exploring Linked Lists</a></li>
-    <li><a href="{{ url_for('read_lesson', lesson_id=4) }}">Stacks and Queues</a></li>
-    <li><a href="{{ url_for('read_lesson', lesson_id=5) }}">Trees and Graphs</a></li>
-</ul>
+<div class="lessons-container">
+    <div class="lessons-list">
+        <section id="data-structures">
+            <h2>Data Structures</h2>
+            <ul>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=1) }}" hx-target="#lesson-content" hx-swap="innerHTML">Arrays</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=2) }}" hx-target="#lesson-content" hx-swap="innerHTML">Linked Lists</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=3) }}" hx-target="#lesson-content" hx-swap="innerHTML">Stacks</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=4) }}" hx-target="#lesson-content" hx-swap="innerHTML">Queues</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=5) }}" hx-target="#lesson-content" hx-swap="innerHTML">Hash Tables</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=6) }}" hx-target="#lesson-content" hx-swap="innerHTML">Trees</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=7) }}" hx-target="#lesson-content" hx-swap="innerHTML">Graphs</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=8) }}" hx-target="#lesson-content" hx-swap="innerHTML">Heaps</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=9) }}" hx-target="#lesson-content" hx-swap="innerHTML">Tries (Prefix Trees)</a></li>
+            </ul>
+        </section>
+
+        <section id="algorithms">
+            <h2>Algorithms</h2>
+            <ul>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=10) }}" hx-target="#lesson-content" hx-swap="innerHTML">Sorting Algorithms</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=11) }}" hx-target="#lesson-content" hx-swap="innerHTML">Searching Algorithms</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=12) }}" hx-target="#lesson-content" hx-swap="innerHTML">Dynamic Programming</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=13) }}" hx-target="#lesson-content" hx-swap="innerHTML">Greedy Algorithms</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=14) }}" hx-target="#lesson-content" hx-swap="innerHTML">Divide and Conquer</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=15) }}" hx-target="#lesson-content" hx-swap="innerHTML">Backtracking</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=16) }}" hx-target="#lesson-content" hx-swap="innerHTML">Graph Algorithms</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=17) }}" hx-target="#lesson-content" hx-swap="innerHTML">Recursive Algorithms</a></li>
+                <li><a href="#" hx-get="{{ url_for('read_lesson', lesson_id=18) }}" hx-target="#lesson-content" hx-swap="innerHTML">String Algorithms</a></li>
+            </ul>
+        </section>
+    </div>
+
+    <div id="lesson-content" class="lesson-content">
+        <p>Select a lesson from the list to view its content.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'lesson-content') {
+            event.detail.target.scrollIntoView({ behavior: 'smooth' });
+            event.detail.target.classList.add('highlight');
+            setTimeout(() => {
+                event.detail.target.classList.remove('highlight');
+            }, 1000);
+        }
+    });
+</script>
 {% endblock %}

@@ -1,16 +1,14 @@
-{% extends "base.html" %}
-{% block content %}
-<h1>{{ lesson.title }}</h1>
+<h2>{{ lesson.title }}</h2>
 <p>{{ lesson.description }}</p>
 
-<h2>Key Points</h2>
+<h3>Key Points</h3>
 <ul>
     {% for point in lesson.key_points %}
     <li>{{ point }}</li>
     {% endfor %}
 </ul>
 
-<h2>Common Operations</h2>
+<h3>Common Operations</h3>
 <table>
     <tr>
         <th>Operation</th>
@@ -26,14 +24,12 @@
     {% endfor %}
 </table>
 
-<h2>Use Cases</h2>
+<h3>Use Cases</h3>
 <ul>
     {% for case in lesson.use_cases %}
     <li>{{ case }}</li>
     {% endfor %}
 </ul>
 
-<h2>Code Example</h2>
+<h3>Code Example</h3>
 <pre><code>{{ lesson.code_example }}</code></pre>
-
-{% endblock %}

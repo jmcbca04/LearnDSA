@@ -11,6 +11,10 @@ header {
   color: #fff;
   padding: 10px 0;
   text-align: center;
+  position: fixed; /* Make header fixed at the top */
+  width: 100%; /* Ensure it spans the full width */
+  top: 0; /* Position at the top */
+  z-index: 1000; /* Ensure it stays on top of other content */
 }
 
 nav a {
@@ -27,12 +31,39 @@ nav a:hover {
 main {
   padding: 20px;
   background-color: #fff;
-  margin: 20px;
+  margin-top: 60px; /* Add top margin to push it below the fixed header */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
   color: #333;
+}
+
+.lessons-container {
+    display: flex;
+    gap: 2rem;
+}
+
+.lessons-list {
+    flex: 1;
+    max-width: 300px;
+}
+
+.lesson-content {
+    flex: 2;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    min-height: 300px;
+}
+
+.highlight {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    0% { background-color: yellow; }
+    100% { background-color: transparent; }
 }
 
 form {
