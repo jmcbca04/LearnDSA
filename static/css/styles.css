@@ -114,3 +114,19 @@ form button {
 form button:hover {
   background-color: #555;
 }
+
+.code-container {
+    background-color: #f4f4f4; /* Light grey background */
+    border: 1px solid #ccc; /* Light grey border */
+    padding: 10px;
+    overflow-x: auto; /* Enables horizontal scrolling */
+    white-space: nowrap; /* Keeps the code in a single line */
+    max-width: 100%; /* Ensures the container does not exceed the viewport width */
+}
+
+@media (max-width: 600px) {
+    .code-container {
+        font-size: 12px; /* Smaller font size for better readability on small screens */
+        padding: 8px; /* Slightly reduced padding */
+    }
+}
