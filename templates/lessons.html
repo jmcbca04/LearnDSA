@@ -45,10 +45,6 @@
     document.body.addEventListener('htmx:afterSwap', function(event) {
         if (event.detail.target.id === 'lesson-content') {
             event.detail.target.scrollIntoView({ behavior: 'smooth' });
-            event.detail.target.classList.add('highlight');
-            setTimeout(() => {
-                event.detail.target.classList.remove('highlight');
-            }, 1000);
         }
     });
 </script>
