@@ -1,8 +1,31 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Quizzes</h1>
+
+<h2>Data Structures</h2>
 <ul>
-    <li><a href="{{ url_for('read_quiz', quiz_id=1) }}">Quiz on Arrays</a></li>
-    <li><a href="{{ url_for('read_quiz', quiz_id=2) }}">Quiz on Linked Lists</a></li>
+    <li><a href="/quiz/arrays">Arrays</a></li>
+    <li><a href="/quiz/linked_lists">Linked Lists</a></li>
+    <li><a href="/quiz/stacks">Stacks</a></li>
+    <li><a href="/quiz/queues">Queues</a></li>
+    <li><a href="/quiz/hash_tables">Hash Tables</a></li>
+    <li><a href="/quiz/trees">Trees</a></li>
+    <li><a href="/quiz/graphs">Graphs</a></li>
+    <li><a href="/quiz/heaps">Heaps</a></li>
+    <li><a href="/quiz/tries">Tries (Prefix Trees)</a></li>
 </ul>
+
+<h2>Algorithms</h2>
+<ul>
+    <li><a href="/quiz/sorting_algorithms">Sorting Algorithms</a></li>
+    <li><a href="/quiz/searching_algorithms">Searching Algorithms</a></li>
+    <li><a href="/quiz/dynamic_programming">Dynamic Programming</a></li>
+    <li><a href="/quiz/greedy_algorithms">Greedy Algorithms</a></li>
+    <li><a href="/quiz/divide_and_conquer">Divide and Conquer</a></li>
+    <li><a href="/quiz/backtracking">Backtracking</a></li>
+    <li><a href="/quiz/graph_algorithms">Graph Algorithms</a></li>
+    <li><a href="/quiz/recursive_algorithms">Recursive Algorithms</a></li>
+    <li><a href="/quiz/string_algorithms">String Algorithms</a></li>
+</ul>
+
 {% endblock %}
