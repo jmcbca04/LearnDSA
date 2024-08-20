@@ -6,6 +6,7 @@ from array_quiz_data import array_quiz  # Import the array quiz data
 import random
 
 app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -1114,7 +1115,6 @@ async def read_quiz(request: Request, quiz_id: str):
     formatted_title = format_title(quiz_id)
     
     if quiz_id == "arrays":
-        # Select a random subset of questions (e.g., 10 questions)
         questions = random.sample(array_quiz, 10)
         quiz_data = {
             "title": f"Quiz on {formatted_title}",
@@ -1122,14 +1122,46 @@ async def read_quiz(request: Request, quiz_id: str):
             "questions": questions
         }
     else:
-        # Handle other quiz types or return a default message
         quiz_data = {
             "title": f"Quiz on {formatted_title}",
             "description": f"Quiz not available for {formatted_title} yet.",
             "questions": []
         }
     
-    return templates.TemplateResponse("quiz_template.html", {"request": request, "quiz": quiz_data})
+    return templates.TemplateResponse("quiz_template.html", {"request": request, "quiz": quiz_data, "quiz_id": quiz_id})
+
+@app.get("/quiz/{quiz_id}/question/{question_index}", response_class=HTMLResponse)
+async def get_question(request: Request, quiz_id: str, question_index: int):
+    if quiz_id == "arrays":
+        questions = random.sample(array_quiz, 10)
+        if int(question_index) < len(questions):
+            question = questions[int(question_index)]
+            return templates.TemplateResponse("question.html", {
+                "request": request,
+                "question": question,
+                "question_index": question_index,
+                "quiz_id": quiz_id,
+                "total_questions": len(questions)
+            })
+    return HTMLResponse("Quiz completed or not found.")
+
+@app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
+async def submit_answer(request: Request, quiz_id: str, question_index: int, answer: int = Form(...)):
+    if quiz_id == "arrays":
+        questions = random.sample(array_quiz, 10)
+        if int(question_index) < len(questions):
+            question = questions[int(question_index)]
+            is_correct = answer == question['correct_answer']
+            next_question_index = int(question_index) + 1
+            return templates.TemplateResponse("feedback.html", {
+                "request": request,
+                "is_correct": is_correct,
+                "correct_answer": question['options'][question['correct_answer']],
+                "next_question_index": next_question_index,
+                "quiz_id": quiz_id,
+                "total_questions": len(questions)
+            })
+    return HTMLResponse("Invalid submission.")
 
 @app.post("/quiz/{quiz_id}")
 async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...)):

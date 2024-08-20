@@ -1,23 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
+<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 <h1>{{ quiz.title }}</h1>
 <p>{{ quiz.description }}</p>
 
 {% if quiz.questions %}
-<form method="post">
-    {% for question in quiz.questions %}
-    <div class="question">
-        <p>{{ question.question }}</p>
-        {% for option in question.options %}
-        <label>
-            <input type="radio" name="q{{ loop.index0 }}" value="{{ loop.index0 }}">
-            {{ option }}
-        </label><br>
-        {% endfor %}
+<div id="quiz-container">
+    <div id="question-container"
+         hx-get="/quiz/{{ quiz_id }}/question/0"
+         hx-trigger="load"
+         hx-target="#question-container">
     </div>
-    {% endfor %}
-    <input type="submit" value="Submit">
-</form>
+</div>
 {% else %}
 <p>No questions available for this quiz.</p>
 {% endif %}
