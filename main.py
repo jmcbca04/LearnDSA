@@ -1104,15 +1104,17 @@ kmp_search(text, pattern)  # Output: Pattern found at index 10
         return HTMLResponse("<p>Lesson not found.</p>")
     return templates.TemplateResponse("lesson_content.html", {"request": request, "lesson": lesson})
 
+def format_title(quiz_id: str) -> str:
+    return ' '.join(word.capitalize() for word in quiz_id.replace('_', ' ').split())
+
 @app.get("/quiz/{quiz_id}", response_class=HTMLResponse)
-async def read_quiz(request: Request, quiz_id: int):
-    # You can expand this with more quizzes or dynamically generate questions.
-    quizzes = {
-        1: "What is the time complexity of accessing an element in an array?",
-        2: "What data structure is used to implement a queue?",
+async def read_quiz(request: Request, quiz_id: str):
+    formatted_title = format_title(quiz_id)
+    quiz_data = {
+        "title": f"Quiz on {formatted_title}",
+        "description": f"Test your knowledge on {formatted_title}!"
     }
-    question = quizzes.get(quiz_id, "Quiz question not found.")
-    return templates.TemplateResponse("quiz.html", {"request": request, "quiz_id": quiz_id, "question": question})
+    return templates.TemplateResponse("quiz_template.html", {"request": request, "quiz": quiz_data})
 
 @app.post("/quiz/{quiz_id}")
 async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...)):
@@ -1137,3 +1139,4 @@ async def list_lessons(request: Request):
 @app.get("/quizzes", response_class=HTMLResponse)
 async def list_quizzes(request: Request):
     return templates.TemplateResponse("quizzes.html", {"request": request})
+
