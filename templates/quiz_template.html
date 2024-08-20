@@ -2,5 +2,23 @@
 {% block content %}
 <h1>{{ quiz.title }}</h1>
 <p>{{ quiz.description }}</p>
-<!-- Add more HTML to handle the quiz questions and answers -->
+
+{% if quiz.questions %}
+<form method="post">
+    {% for question in quiz.questions %}
+    <div class="question">
+        <p>{{ question.question }}</p>
+        {% for option in question.options %}
+        <label>
+            <input type="radio" name="q{{ loop.index0 }}" value="{{ loop.index0 }}">
+            {{ option }}
+        </label><br>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    <input type="submit" value="Submit">
+</form>
+{% else %}
+<p>No questions available for this quiz.</p>
+{% endif %}
 {% endblock %}

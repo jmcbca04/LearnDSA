@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from array_quiz_data import array_quiz  # Import the array quiz data
+import random
 
 app = FastAPI()
 
@@ -1110,10 +1112,23 @@ def format_title(quiz_id: str) -> str:
 @app.get("/quiz/{quiz_id}", response_class=HTMLResponse)
 async def read_quiz(request: Request, quiz_id: str):
     formatted_title = format_title(quiz_id)
-    quiz_data = {
-        "title": f"Quiz on {formatted_title}",
-        "description": f"Test your knowledge on {formatted_title}!"
-    }
+    
+    if quiz_id == "arrays":
+        # Select a random subset of questions (e.g., 10 questions)
+        questions = random.sample(array_quiz, 10)
+        quiz_data = {
+            "title": f"Quiz on {formatted_title}",
+            "description": f"Test your knowledge on {formatted_title}!",
+            "questions": questions
+        }
+    else:
+        # Handle other quiz types or return a default message
+        quiz_data = {
+            "title": f"Quiz on {formatted_title}",
+            "description": f"Quiz not available for {formatted_title} yet.",
+            "questions": []
+        }
+    
     return templates.TemplateResponse("quiz_template.html", {"request": request, "quiz": quiz_data})
 
 @app.post("/quiz/{quiz_id}")
