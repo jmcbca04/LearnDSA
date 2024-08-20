@@ -1,0 +1,11 @@
+<h3>Question {{ question_index|int + 1 }} of {{ total_questions }}</h3>
+<p>{{ question.question }}</p>
+<form hx-post="/quiz/{{ quiz_id }}/submit/{{ question_index }}" hx-target="#question-container">
+    {% for option in question.options %}
+    <label>
+        <input type="radio" name="answer" value="{{ loop.index0 }}" required>
+        {{ option }}
+    </label><br>
+    {% endfor %}
+    <button type="submit">Submit</button>
+</form>
