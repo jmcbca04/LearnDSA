@@ -6,7 +6,7 @@
   {% endif %}
 </p>
 {% if next_question_index < total_questions %}
-<div hx-get="/quiz/{{ quiz_id }}/question/{{ next_question_index }}"
+<div hx-get="/quiz/{{ quiz_id }}/question/{{ next_question_index }}?encoded_questions={{ encoded_questions }}"
    hx-trigger="load delay:2s"
    hx-target="#question-container">
   Loading next question...

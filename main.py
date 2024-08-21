@@ -2,12 +2,12 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from array_quiz_data import array_quiz  # Import the array quiz data
+from array_quiz_data import array_quiz
 import random
+import base64
+import json
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
-
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -1116,6 +1116,7 @@ async def read_quiz(request: Request, quiz_id: str):
     
     if quiz_id == "arrays":
         questions = random.sample(array_quiz, 10)
+        encoded_questions = base64.b64encode(json.dumps(questions).encode()).decode()
         quiz_data = {
             "title": f"Quiz on {formatted_title}",
             "description": f"Test your knowledge on {formatted_title}!",
@@ -1127,13 +1128,20 @@ async def read_quiz(request: Request, quiz_id: str):
             "description": f"Quiz not available for {formatted_title} yet.",
             "questions": []
         }
+        encoded_questions = ""
     
-    return templates.TemplateResponse("quiz_template.html", {"request": request, "quiz": quiz_data, "quiz_id": quiz_id})
+    return templates.TemplateResponse("quiz_template.html", {"request": request, "quiz": quiz_data, "quiz_id": quiz_id, "encoded_questions": encoded_questions})
 
 @app.get("/quiz/{quiz_id}/question/{question_index}", response_class=HTMLResponse)
-async def get_question(request: Request, quiz_id: str, question_index: int):
+async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None):
     if quiz_id == "arrays":
-        questions = random.sample(array_quiz, 10)
+        if encoded_questions is None:
+            # If encoded_questions is not provided, generate new questions
+            questions = random.sample(array_quiz, 10)
+            encoded_questions = base64.b64encode(json.dumps(questions).encode()).decode()
+        else:
+            questions = json.loads(base64.b64decode(encoded_questions))
+        
         if int(question_index) < len(questions):
             question = questions[int(question_index)]
             return templates.TemplateResponse("question.html", {
@@ -1141,14 +1149,15 @@ async def get_question(request: Request, quiz_id: str, question_index: int):
                 "question": question,
                 "question_index": question_index,
                 "quiz_id": quiz_id,
-                "total_questions": len(questions)
+                "total_questions": len(questions),
+                "encoded_questions": encoded_questions
             })
     return HTMLResponse("Quiz completed or not found.")
 
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
-async def submit_answer(request: Request, quiz_id: str, question_index: int, answer: int = Form(...)):
+async def submit_answer(request: Request, quiz_id: str, question_index: int, answer: str = Form(...), encoded_questions: str = Form(...)):
     if quiz_id == "arrays":
-        questions = random.sample(array_quiz, 10)
+        questions = json.loads(base64.b64decode(encoded_questions))
         if int(question_index) < len(questions):
             question = questions[int(question_index)]
             is_correct = answer == question['correct_answer']
@@ -1156,10 +1165,11 @@ async def submit_answer(request: Request, quiz_id: str, question_index: int, ans
             return templates.TemplateResponse("feedback.html", {
                 "request": request,
                 "is_correct": is_correct,
-                "correct_answer": question['options'][question['correct_answer']],
+                "correct_answer": question['correct_answer'],
                 "next_question_index": next_question_index,
                 "quiz_id": quiz_id,
-                "total_questions": len(questions)
+                "total_questions": len(questions),
+                "encoded_questions": encoded_questions
             })
     return HTMLResponse("Invalid submission.")
 
