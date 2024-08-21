@@ -3,9 +3,10 @@
 <form hx-post="/quiz/{{ quiz_id }}/submit/{{ question_index }}" hx-target="#question-container">
     {% for option in question.options %}
     <label>
-        <input type="radio" name="answer" value="{{ loop.index0 }}" required>
+        <input type="radio" name="answer" value="{{ option }}" required>
         {{ option }}
     </label><br>
     {% endfor %}
+    <input type="hidden" name="encoded_questions" value="{{ encoded_questions }}">
     <button type="submit">Submit</button>
 </form>
