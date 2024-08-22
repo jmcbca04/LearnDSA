@@ -8,6 +8,7 @@ from stack_quiz_data import stack_quiz
 from queue_quiz_data import queue_quiz
 from hash_table_quiz_data import hash_table_quiz
 from tree_quiz_data import tree_quiz
+from graph_quiz_data import graph_quiz
 import random
 import base64
 import json
@@ -1200,14 +1201,15 @@ def format_title(quiz_id: str) -> str:
 async def read_quiz(request: Request, quiz_id: str):
     formatted_title = format_title(quiz_id)
 
-    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees"]:
+    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs"]:
         quiz_data = {
             "arrays": array_quiz,
             "linked_lists": linked_list_quiz,
             "stacks": stack_quiz,
             "queues": queue_quiz,
             "hash_tables": hash_table_quiz,
-            "trees": tree_quiz
+            "trees": tree_quiz,
+            "graphs": graph_quiz
         }
         questions = random.sample(quiz_data[quiz_id], 10)
         encoded_questions = base64.b64encode(
@@ -1230,7 +1232,7 @@ async def read_quiz(request: Request, quiz_id: str):
 
 @app.get("/quiz/{quiz_id}/question/{question_index}", response_class=HTMLResponse)
 async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None):
-    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees"]:
+    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs"]:
         if encoded_questions is None:
             # If encoded_questions is not provided, generate new questions
             quiz_data = {
@@ -1239,7 +1241,8 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
                 "stacks": stack_quiz,
                 "queues": queue_quiz,
                 "hash_tables": hash_table_quiz,
-                "trees": tree_quiz
+                "trees": tree_quiz,
+                "graphs": graph_quiz
             }
             questions = random.sample(quiz_data[quiz_id], 10)
             encoded_questions = base64.b64encode(
@@ -1262,7 +1265,7 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
 
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
 async def submit_answer(request: Request, quiz_id: str, question_index: int, answer: str = Form(...), encoded_questions: str = Form(...)):
-    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees"]:
+    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs"]:
         questions = json.loads(base64.b64decode(encoded_questions))
         if int(question_index) < len(questions):
             question = questions[int(question_index)]
