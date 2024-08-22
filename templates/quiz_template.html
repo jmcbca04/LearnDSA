@@ -7,9 +7,10 @@
 {% if quiz.questions %}
 <div id="quiz-container">
     <div id="question-container"
-         hx-get="/quiz/{{ quiz_id }}/question/0"
+         hx-get="/quiz/{{ quiz_id }}/question/0?encoded_questions={{ encoded_questions | urlencode }}"
          hx-trigger="load"
-         hx-target="#question-container">
+         hx-target="#question-container"
+         hx-swap="outerHTML">
     </div>
 </div>
 {% else %}

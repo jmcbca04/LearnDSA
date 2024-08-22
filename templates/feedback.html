@@ -1,17 +1,21 @@
-<p id="feedback">
+<div id="feedback">
   {% if is_correct %}
-      Correct!
+    <p class="correct">Correct!</p>
   {% else %}
-      Incorrect. The correct answer was: {{ correct_answer }}
+    <p class="incorrect">Incorrect. The correct answer was: {{ correct_answer }}</p>
   {% endif %}
-</p>
-{% if next_question_index < total_questions %}
-<div hx-get="/quiz/{{ quiz_id }}/question/{{ next_question_index }}?encoded_questions={{ encoded_questions }}"
-   hx-trigger="load delay:2s"
-   hx-target="#question-container">
-  Loading next question...
+  <p><strong>Explanation:</strong> {{ explanation }}</p>
+
+  {% if next_question_index < total_questions %}
+    <button hx-get="/quiz/{{ quiz_id }}/question/{{ next_question_index }}?encoded_questions={{ encoded_questions | urlencode }}"
+            hx-target="#question-container"
+            hx-swap="outerHTML"
+            class="next-question-btn">
+      Next Question
+    </button>
+  {% else %}
+    <h3>Quiz Completed!</h3>
+    <p>You've answered all the questions!</p>
+    <a href="/quizzes" class="back-to-quizzes-btn">Back to Quizzes</a>
+  {% endif %}
 </div>
-{% else %}
-<h3>Quiz Completed!</h3>
-<p>You've answered all the questions!</p>
-{% endif %}

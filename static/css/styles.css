@@ -130,3 +130,48 @@ form button:hover {
         padding: 8px; /* Slightly reduced padding */
     }
 }
+
+#feedback {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+#feedback .correct {
+  color: green;
+  font-weight: bold;
+}
+
+#feedback .incorrect {
+  color: red;
+  font-weight: bold;
+}
+
+.next-question-btn {
+  margin-top: 15px;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.next-question-btn:hover {
+  background-color: #0056b3;
+}
+
+.back-to-quizzes-btn {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 15px;
+  background-color: #28a745;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.back-to-quizzes-btn:hover {
+  background-color: #218838;
+}
