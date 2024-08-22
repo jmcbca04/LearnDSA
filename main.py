@@ -3,6 +3,14 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from array_quiz_data import array_quiz
+from linked_list_quiz_data import linked_list_quiz
+from stack_quiz_data import stack_quiz
+from queue_quiz_data import queue_quiz
+from hash_table_quiz_data import hash_table_quiz
+from tree_quiz_data import tree_quiz
+from graph_quiz_data import graph_quiz
+from heap_quiz_data import heap_quiz
+from trie_quiz_data import trie_quiz
 import random
 import base64
 import json
@@ -11,9 +19,11 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+
 @app.get("/", response_class=HTMLResponse)
 async def read_home(request: Request):
     return templates.TemplateResponse("home.html", {"request": request})
+
 
 @app.get("/lesson/{lesson_id}", response_class=HTMLResponse)
 async def read_lesson(request: Request, lesson_id: int):
@@ -28,10 +38,14 @@ async def read_lesson(request: Request, lesson_id: int):
                 "Dynamic arrays (like Python lists) can grow or shrink in size."
             ],
             "operations": [
-                {"name": "Access", "time_complexity": "O(1)", "description": "Retrieve an element at a given index."},
-                {"name": "Search", "time_complexity": "O(n)", "description": "Find a specific element in the array."},
-                {"name": "Insert", "time_complexity": "O(n)", "description": "Add an element at a specific position."},
-                {"name": "Delete", "time_complexity": "O(n)", "description": "Remove an element from a specific position."}
+                {"name": "Access", "time_complexity":
+                    "O(1)", "description": "Retrieve an element at a given index."},
+                {"name": "Search", "time_complexity":
+                    "O(n)", "description": "Find a specific element in the array."},
+                {"name": "Insert", "time_complexity":
+                    "O(n)", "description": "Add an element at a specific position."},
+                {"name": "Delete", "time_complexity":
+                    "O(n)", "description": "Remove an element from a specific position."}
             ],
             "use_cases": [
                 "Storing and accessing sequential data",
@@ -62,7 +76,7 @@ numbers.pop(1)  # Remove element at index 1
 print(numbers)  # Output: [1, 10, 3, 4, 5, 6]
             """
         },
-         2: {
+        2: {
             "title": "Linked Lists",
             "description": "A linear data structure where elements are stored in nodes, and each node points to the next node in the sequence.",
             "key_points": [
@@ -73,10 +87,14 @@ print(numbers)  # Output: [1, 10, 3, 4, 5, 6]
                 "Unlike arrays, Linked Lists do not require contiguous memory allocation."
             ],
             "operations": [
-                {"name": "Access", "time_complexity": "O(n)", "description": "Traverse the list to reach a specific element."},
-                {"name": "Search", "time_complexity": "O(n)", "description": "Traverse the list to find a specific element."},
-                {"name": "Insert", "time_complexity": "O(1) or O(n)", "description": "O(1) at the beginning, O(n) if inserting at a specific position."},
-                {"name": "Delete", "time_complexity": "O(1) or O(n)", "description": "O(1) at the beginning, O(n) if deleting from a specific position."}
+                {"name": "Access", "time_complexity":
+                    "O(n)", "description": "Traverse the list to reach a specific element."},
+                {"name": "Search", "time_complexity":
+                    "O(n)", "description": "Traverse the list to find a specific element."},
+                {"name": "Insert", "time_complexity": "O(1) or O(n)",
+                 "description": "O(1) at the beginning, O(n) if inserting at a specific position."},
+                {"name": "Delete", "time_complexity": "O(1) or O(n)",
+                 "description": "O(1) at the beginning, O(n) if deleting from a specific position."}
             ],
             "use_cases": [
                 "Implementing other data structures like stacks, queues, and hash tables",
@@ -134,10 +152,14 @@ print(ll.display())  # Output: [1, 2, 3]
                 "Stacks have a limited access pattern - only the top element can be accessed directly."
             ],
             "operations": [
-                {"name": "Push", "time_complexity": "O(1)", "description": "Add an element to the top of the stack."},
-                {"name": "Pop", "time_complexity": "O(1)", "description": "Remove and return the top element from the stack."},
-                {"name": "Peek/Top", "time_complexity": "O(1)", "description": "Return the top element without removing it."},
-                {"name": "IsEmpty", "time_complexity": "O(1)", "description": "Check if the stack is empty."}
+                {"name": "Push", "time_complexity":
+                    "O(1)", "description": "Add an element to the top of the stack."},
+                {"name": "Pop", "time_complexity":
+                    "O(1)", "description": "Remove and return the top element from the stack."},
+                {"name": "Peek/Top", "time_complexity":
+                    "O(1)", "description": "Return the top element without removing it."},
+                {"name": "IsEmpty",
+                    "time_complexity": "O(1)", "description": "Check if the stack is empty."}
             ],
             "use_cases": [
                 "Function call management (call stack) in programming languages",
@@ -194,11 +216,16 @@ print(stack.is_empty())  # Output: False
                 "Variations include circular queues, double-ended queues (deques), and priority queues."
             ],
             "operations": [
-                {"name": "Enqueue", "time_complexity": "O(1)", "description": "Add an element to the rear of the queue."},
-                {"name": "Dequeue", "time_complexity": "O(1)", "description": "Remove and return the front element from the queue."},
-                {"name": "Front", "time_complexity": "O(1)", "description": "Return the front element without removing it."},
-                {"name": "IsEmpty", "time_complexity": "O(1)", "description": "Check if the queue is empty."},
-                {"name": "Size", "time_complexity": "O(1)", "description": "Return the number of elements in the queue."}
+                {"name": "Enqueue", "time_complexity":
+                    "O(1)", "description": "Add an element to the rear of the queue."},
+                {"name": "Dequeue", "time_complexity":
+                    "O(1)", "description": "Remove and return the front element from the queue."},
+                {"name": "Front", "time_complexity":
+                    "O(1)", "description": "Return the front element without removing it."},
+                {"name": "IsEmpty",
+                    "time_complexity": "O(1)", "description": "Check if the queue is empty."},
+                {"name": "Size", "time_complexity":
+                    "O(1)", "description": "Return the number of elements in the queue."}
             ],
             "use_cases": [
                 "Task scheduling in operating systems",
@@ -255,10 +282,14 @@ print(queue.is_empty()) # Output: False
                 "Load factor (number of entries / number of buckets) affects performance and needs to be balanced."
             ],
             "operations": [
-                {"name": "Insert", "time_complexity": "O(1) average", "description": "Add a key-value pair to the hash table."},
-                {"name": "Delete", "time_complexity": "O(1) average", "description": "Remove a key-value pair from the hash table."},
-                {"name": "Lookup", "time_complexity": "O(1) average", "description": "Retrieve the value associated with a given key."},
-                {"name": "Resize", "time_complexity": "O(n)", "description": "Increase or decrease the size of the hash table and rehash all entries."}
+                {"name": "Insert", "time_complexity": "O(1) average",
+                 "description": "Add a key-value pair to the hash table."},
+                {"name": "Delete", "time_complexity": "O(1) average",
+                 "description": "Remove a key-value pair from the hash table."},
+                {"name": "Lookup", "time_complexity": "O(1) average",
+                 "description": "Retrieve the value associated with a given key."},
+                {"name": "Resize", "time_complexity":
+                    "O(n)", "description": "Increase or decrease the size of the hash table and rehash all entries."}
             ],
             "use_cases": [
                 "Implementing associative arrays (dictionaries in Python, objects in JavaScript)",
@@ -325,10 +356,14 @@ except KeyError:
                 "Trees are used to represent hierarchical relationships and for efficient searching and sorting."
             ],
             "operations": [
-                {"name": "Insert", "time_complexity": "O(log n) for balanced trees", "description": "Add a new node to the tree."},
-                {"name": "Delete", "time_complexity": "O(log n) for balanced trees", "description": "Remove a node from the tree."},
-                {"name": "Search", "time_complexity": "O(log n) for balanced trees", "description": "Find a specific node in the tree."},
-                {"name": "Traversal", "time_complexity": "O(n)", "description": "Visit all nodes in the tree (e.g., in-order, pre-order, post-order)."}
+                {"name": "Insert", "time_complexity": "O(log n) for balanced trees",
+                 "description": "Add a new node to the tree."},
+                {"name": "Delete", "time_complexity": "O(log n) for balanced trees",
+                 "description": "Remove a node from the tree."},
+                {"name": "Search", "time_complexity": "O(log n) for balanced trees",
+                 "description": "Find a specific node in the tree."},
+                {"name": "Traversal", "time_complexity":
+                    "O(n)", "description": "Visit all nodes in the tree (e.g., in-order, pre-order, post-order)."}
             ],
             "use_cases": [
                 "File systems in operating systems",
@@ -414,12 +449,18 @@ print(bst.search(10))  # Output: None
                 "Special types include trees, DAGs (Directed Acyclic Graphs), and bipartite graphs."
             ],
             "operations": [
-                {"name": "Add Vertex", "time_complexity": "O(1)", "description": "Add a new vertex to the graph."},
-                {"name": "Add Edge", "time_complexity": "O(1)", "description": "Add a new edge between two vertices."},
-                {"name": "Remove Vertex", "time_complexity": "O(|V| + |E|)", "description": "Remove a vertex and all its incident edges."},
-                {"name": "Remove Edge", "time_complexity": "O(1)", "description": "Remove an edge between two vertices."},
-                {"name": "DFS Traversal", "time_complexity": "O(|V| + |E|)", "description": "Depth-First Search traversal of the graph."},
-                {"name": "BFS Traversal", "time_complexity": "O(|V| + |E|)", "description": "Breadth-First Search traversal of the graph."}
+                {"name": "Add Vertex",
+                    "time_complexity": "O(1)", "description": "Add a new vertex to the graph."},
+                {"name": "Add Edge", "time_complexity":
+                    "O(1)", "description": "Add a new edge between two vertices."},
+                {"name": "Remove Vertex", "time_complexity":
+                    "O(|V| + |E|)", "description": "Remove a vertex and all its incident edges."},
+                {"name": "Remove Edge", "time_complexity":
+                    "O(1)", "description": "Remove an edge between two vertices."},
+                {"name": "DFS Traversal", "time_complexity":
+                    "O(|V| + |E|)", "description": "Depth-First Search traversal of the graph."},
+                {"name": "BFS Traversal", "time_complexity":
+                    "O(|V| + |E|)", "description": "Breadth-First Search traversal of the graph."}
             ],
             "use_cases": [
                 "Social networks (friends connections)",
@@ -504,10 +545,14 @@ g.bfs(0)
                 "Common operations include insertion, deletion, and extracting the maximum/minimum element."
             ],
             "operations": [
-                {"name": "Insert", "time_complexity": "O(log n)", "description": "Add a new element to the heap."},
-                {"name": "Delete", "time_complexity": "O(log n)", "description": "Remove an element from the heap."},
-                {"name": "Extract Max/Min", "time_complexity": "O(log n)", "description": "Remove and return the maximum/minimum element from the heap."},
-                {"name": "Heapify", "time_complexity": "O(log n)", "description": "Restore the heap property after insertion or deletion."}
+                {"name": "Insert",
+                    "time_complexity": "O(log n)", "description": "Add a new element to the heap."},
+                {"name": "Delete", "time_complexity":
+                    "O(log n)", "description": "Remove an element from the heap."},
+                {"name": "Extract Max/Min", "time_complexity":
+                    "O(log n)", "description": "Remove and return the maximum/minimum element from the heap."},
+                {"name": "Heapify", "time_complexity":
+                    "O(log n)", "description": "Restore the heap property after insertion or deletion."}
             ],
             "use_cases": [
                 "Implementing priority queues",
@@ -578,10 +623,14 @@ print(max_heap.extract_max())  # Output: 7
                 "Common operations include insertion, deletion, and searching for a string."
             ],
             "operations": [
-                {"name": "Insert", "time_complexity": "O(m)", "description": "Add a new string to the trie, where m is the length of the string."},
-                {"name": "Delete", "time_complexity": "O(m)", "description": "Remove a string from the trie, where m is the length of the string."},
-                {"name": "Search", "time_complexity": "O(m)", "description": "Check if a string is in the trie, where m is the length of the string."},
-                {"name": "Autocomplete", "time_complexity": "O(m)", "description": "Find all strings in the trie that start with a given prefix."}
+                {"name": "Insert", "time_complexity":
+                    "O(m)", "description": "Add a new string to the trie, where m is the length of the string."},
+                {"name": "Delete", "time_complexity":
+                    "O(m)", "description": "Remove a string from the trie, where m is the length of the string."},
+                {"name": "Search", "time_complexity":
+                    "O(m)", "description": "Check if a string is in the trie, where m is the length of the string."},
+                {"name": "Autocomplete", "time_complexity":
+                    "O(m)", "description": "Find all strings in the trie that start with a given prefix."}
             ],
             "use_cases": [
                 "Implementing dictionaries and autocomplete suggestions",
@@ -657,13 +706,20 @@ print(trie.autocomplete("app"))  # Output: ['app', 'apple']
                 "In-place sorting algorithms use a small amount of additional memory."
             ],
             "operations": [
-                {"name": "Bubble Sort", "time_complexity": "O(n^2)", "description": "Repeatedly swapping adjacent elements if they are in the wrong order."},
-                {"name": "Selection Sort", "time_complexity": "O(n^2)", "description": "Selecting the smallest (or largest) element and swapping it with the first unsorted element."},
-                {"name": "Insertion Sort", "time_complexity": "O(n^2)", "description": "Inserting each element into its correct position in the sorted portion of the array."},
-                {"name": "Merge Sort", "time_complexity": "O(n log n)", "description": "Dividing the array into two halves, sorting them recursively, and merging them."},
-                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case", "description": "Selecting a 'pivot' element and partitioning the array around it."},
-                {"name": "Heap Sort", "time_complexity": "O(n log n)", "description": "Building a max-heap from the array and repeatedly extracting the maximum element."},
-                {"name": "Radix Sort", "time_complexity": "O(nk)", "description": "Sorting integers by grouping them by individual digits."}
+                {"name": "Bubble Sort", "time_complexity":
+                    "O(n^2)", "description": "Repeatedly swapping adjacent elements if they are in the wrong order."},
+                {"name": "Selection Sort", "time_complexity":
+                    "O(n^2)", "description": "Selecting the smallest (or largest) element and swapping it with the first unsorted element."},
+                {"name": "Insertion Sort", "time_complexity":
+                    "O(n^2)", "description": "Inserting each element into its correct position in the sorted portion of the array."},
+                {"name": "Merge Sort", "time_complexity":
+                    "O(n log n)", "description": "Dividing the array into two halves, sorting them recursively, and merging them."},
+                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case",
+                 "description": "Selecting a 'pivot' element and partitioning the array around it."},
+                {"name": "Heap Sort", "time_complexity":
+                    "O(n log n)", "description": "Building a max-heap from the array and repeatedly extracting the maximum element."},
+                {"name": "Radix Sort", "time_complexity":
+                    "O(nk)", "description": "Sorting integers by grouping them by individual digits."}
             ],
             "use_cases": [
                 "Sorting data for display or analysis",
@@ -699,11 +755,16 @@ print(arr)  # Output: [11, 12, 22, 25, 34, 64, 90]
                 "Binary Search is suitable for sorted arrays or lists."
             ],
             "operations": [
-                {"name": "Linear Search", "time_complexity": "O(n)", "description": "Sequentially checking each element in the data structure."},
-                {"name": "Binary Search", "time_complexity": "O(log n)", "description": "Dividing the search space in half at each step."},
-                {"name": "Depth-First Search (DFS)", "time_complexity": "O(V + E)", "description": "Exploring as far as possible along each branch before backtracking."},
-                {"name": "Breadth-First Search (BFS)", "time_complexity": "O(V + E)", "description": "Exploring all neighbors at the current depth before moving to the next depth."},
-                {"name": "Hash Table Search", "time_complexity": "O(1) average, O(n) worst case", "description": "Using a hash function to compute an index and directly accessing the element."}
+                {"name": "Linear Search", "time_complexity":
+                    "O(n)", "description": "Sequentially checking each element in the data structure."},
+                {"name": "Binary Search", "time_complexity":
+                    "O(log n)", "description": "Dividing the search space in half at each step."},
+                {"name": "Depth-First Search (DFS)", "time_complexity": "O(V + E)",
+                 "description": "Exploring as far as possible along each branch before backtracking."},
+                {"name": "Breadth-First Search (BFS)", "time_complexity": "O(V + E)",
+                 "description": "Exploring all neighbors at the current depth before moving to the next depth."},
+                {"name": "Hash Table Search", "time_complexity": "O(1) average, O(n) worst case",
+                 "description": "Using a hash function to compute an index and directly accessing the element."}
             ],
             "use_cases": [
                 "Finding a specific element in a collection",
@@ -749,9 +810,12 @@ else:
                 "It often involves trade-offs between time and space complexity."
             ],
             "operations": [
-                {"name": "Tabulation", "time_complexity": "O(n^2) to O(n^3)", "description": "Building a table of solutions for subproblems and using those solutions to solve larger subproblems."},
-                {"name": "Memoization", "time_complexity": "O(n^2) to O(n^3)", "description": "Storing the solutions to subproblems in a cache and using those solutions to solve larger subproblems."},
-                {"name": "Optimization", "time_complexity": "O(n^2) to O(n^3)", "description": "Finding the optimal solution to a problem by considering all possible combinations of subproblems."}
+                {"name": "Tabulation", "time_complexity": "O(n^2) to O(n^3)",
+                 "description": "Building a table of solutions for subproblems and using those solutions to solve larger subproblems."},
+                {"name": "Memoization", "time_complexity": "O(n^2) to O(n^3)",
+                 "description": "Storing the solutions to subproblems in a cache and using those solutions to solve larger subproblems."},
+                {"name": "Optimization", "time_complexity": "O(n^2) to O(n^3)",
+                 "description": "Finding the optimal solution to a problem by considering all possible combinations of subproblems."}
             ],
             "use_cases": [
                 "Optimizing resource allocation and scheduling",
@@ -786,9 +850,12 @@ print(fibonacci(n))  # Output: 55
                 "They are suitable for problems where the optimal solution can be built incrementally."
             ],
             "operations": [
-                {"name": "Dijkstra's Algorithm", "time_complexity": "O(E log V)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph."},
-                {"name": "Kruskal's Algorithm", "time_complexity": "O(E log E)", "description": "Finding the minimum spanning tree of a connected, undirected graph."},
-                {"name": "Huffman Coding", "time_complexity": "O(n log n)", "description": "Building an optimal prefix code for a given set of characters and their frequencies."}
+                {"name": "Dijkstra's Algorithm", "time_complexity":
+                    "O(E log V)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph."},
+                {"name": "Kruskal's Algorithm", "time_complexity":
+                    "O(E log E)", "description": "Finding the minimum spanning tree of a connected, undirected graph."},
+                {"name": "Huffman Coding", "time_complexity":
+                    "O(n log n)", "description": "Building an optimal prefix code for a given set of characters and their frequencies."}
             ],
             "use_cases": [
                 "Solving optimization problems in computer networks and telecommunications",
@@ -839,10 +906,14 @@ print(dijkstra(graph, start_vertex))  # Output: {'A': 0, 'B': 1, 'C': 3, 'D': 4}
                 "It is suitable for problems that can be divided into independent subproblems."
             ],
             "operations": [
-                {"name": "Binary Search", "time_complexity": "O(log n)", "description": "Finding a specific element in a sorted array by repeatedly dividing the search space in half."},
-                {"name": "Merge Sort", "time_complexity": "O(n log n)", "description": "Sorting an array by dividing it into two halves, sorting them recursively, and merging them."},
-                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case", "description": "Sorting an array by selecting a 'pivot' element and partitioning the array around it."},
-                {"name": "Fast Fourier Transform (FFT)", "time_complexity": "O(n log n)", "description": "Computing the Discrete Fourier Transform (DFT) of a sequence of complex numbers."}
+                {"name": "Binary Search", "time_complexity":
+                    "O(log n)", "description": "Finding a specific element in a sorted array by repeatedly dividing the search space in half."},
+                {"name": "Merge Sort", "time_complexity":
+                    "O(n log n)", "description": "Sorting an array by dividing it into two halves, sorting them recursively, and merging them."},
+                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case",
+                 "description": "Sorting an array by selecting a 'pivot' element and partitioning the array around it."},
+                {"name": "Fast Fourier Transform (FFT)", "time_complexity": "O(n log n)",
+                 "description": "Computing the Discrete Fourier Transform (DFT) of a sequence of complex numbers."}
             ],
             "use_cases": [
                 "Solving mathematical and scientific problems",
@@ -892,9 +963,12 @@ print(merge_sort(arr))  # Output: [11, 12, 22, 25, 34, 64, 90]
                 "It is suitable for problems with a large search space and a small solution space."
             ],
             "operations": [
-                {"name": "N-Queens Problem", "time_complexity": "O(n!)", "description": "Placing n queens on an n x n chessboard such that no two queens threaten each other."},
-                {"name": "Knight's Tour Problem", "time_complexity": "O(8^(n^2))", "description": "Finding a closed tour for a knight on an n x n chessboard that visits every square exactly once."},
-                {"name": "Traveling Salesman Problem", "time_complexity": "O(n!)", "description": "Finding the shortest possible tour that visits a given set of cities and returns to the starting city."}
+                {"name": "N-Queens Problem", "time_complexity":
+                    "O(n!)", "description": "Placing n queens on an n x n chessboard such that no two queens threaten each other."},
+                {"name": "Knight's Tour Problem", "time_complexity":
+                    "O(8^(n^2))", "description": "Finding a closed tour for a knight on an n x n chessboard that visits every square exactly once."},
+                {"name": "Traveling Salesman Problem", "time_complexity":
+                    "O(n!)", "description": "Finding the shortest possible tour that visits a given set of cities and returns to the starting city."}
             ],
             "use_cases": [
                 "Solving combinatorial problems in computer science",
@@ -953,11 +1027,16 @@ else:
                 "Graph algorithms can be implemented using various data structures, such as adjacency matrices and adjacency lists."
             ],
             "operations": [
-                {"name": "Breadth-First Search (BFS)", "time_complexity": "O(V + E)", "description": "Exploring all vertices at the current depth before moving to the next depth."},
-                {"name": "Depth-First Search (DFS)", "time_complexity": "O(V + E)", "description": "Exploring as far as possible along each branch before backtracking."},
-                {"name": "Dijkstra's Algorithm", "time_complexity": "O(E log V)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph."},
-                {"name": "Bellman-Ford Algorithm", "time_complexity": "O(VE)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph, even if there are negative weights."},
-                {"name": "Kruskal's Algorithm", "time_complexity": "O(E log E)", "description": "Finding the minimum spanning tree of a connected, undirected graph."}
+                {"name": "Breadth-First Search (BFS)", "time_complexity": "O(V + E)",
+                 "description": "Exploring all vertices at the current depth before moving to the next depth."},
+                {"name": "Depth-First Search (DFS)", "time_complexity": "O(V + E)",
+                 "description": "Exploring as far as possible along each branch before backtracking."},
+                {"name": "Dijkstra's Algorithm", "time_complexity":
+                    "O(E log V)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph."},
+                {"name": "Bellman-Ford Algorithm", "time_complexity":
+                    "O(VE)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph, even if there are negative weights."},
+                {"name": "Kruskal's Algorithm", "time_complexity":
+                    "O(E log E)", "description": "Finding the minimum spanning tree of a connected, undirected graph."}
             ],
             "use_cases": [
                 "Network analysis and routing",
@@ -1008,10 +1087,14 @@ bfs(graph, start_vertex)  # Output: A B C D E F
                 "They are suitable for problems that can be divided into independent subproblems."
             ],
             "operations": [
-                {"name": "Factorial", "time_complexity": "O(n)", "description": "Calculating the factorial of a non-negative integer n."},
-                {"name": "Fibonacci", "time_complexity": "O(2^n)", "description": "Calculating the nth Fibonacci number."},
-                {"name": "Tower of Hanoi", "time_complexity": "O(2^n)", "description": "Solving the Tower of Hanoi problem with n disks."},
-                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case", "description": "Sorting an array by selecting a 'pivot' element and partitioning the array around it."}
+                {"name": "Factorial", "time_complexity":
+                    "O(n)", "description": "Calculating the factorial of a non-negative integer n."},
+                {"name": "Fibonacci", "time_complexity":
+                    "O(2^n)", "description": "Calculating the nth Fibonacci number."},
+                {"name": "Tower of Hanoi", "time_complexity":
+                    "O(2^n)", "description": "Solving the Tower of Hanoi problem with n disks."},
+                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case",
+                 "description": "Sorting an array by selecting a 'pivot' element and partitioning the array around it."}
             ],
             "use_cases": [
                 "Solving mathematical and scientific problems",
@@ -1045,10 +1128,14 @@ print(factorial(n))  # Output: 120
                 "String algorithms can be implemented using various techniques, such as brute force, dynamic programming, and finite automata."
             ],
             "operations": [
-                {"name": "Knuth-Morris-Pratt (KMP)", "time_complexity": "O(n + m)", "description": "Finding the first occurrence of a pattern in a text."},
-                {"name": "Boyer-Moore", "time_complexity": "O(n/m) average, O(nm) worst case", "description": "Finding the first occurrence of a pattern in a text."},
-                {"name": "Rabin-Karp", "time_complexity": "O(nm) average, O(n^2) worst case", "description": "Finding the first occurrence of a pattern in a text."},
-                {"name": "Regular Expressions", "time_complexity": "O(nm) average, O(n^2) worst case", "description": "Matching patterns in strings using regular expressions."}
+                {"name": "Knuth-Morris-Pratt (KMP)", "time_complexity": "O(n + m)",
+                 "description": "Finding the first occurrence of a pattern in a text."},
+                {"name": "Boyer-Moore", "time_complexity": "O(n/m) average, O(nm) worst case",
+                 "description": "Finding the first occurrence of a pattern in a text."},
+                {"name": "Rabin-Karp", "time_complexity": "O(nm) average, O(n^2) worst case",
+                 "description": "Finding the first occurrence of a pattern in a text."},
+                {"name": "Regular Expressions", "time_complexity": "O(nm) average, O(n^2) worst case",
+                 "description": "Matching patterns in strings using regular expressions."}
             ],
             "use_cases": [
                 "Text editing and processing",
@@ -1107,16 +1194,30 @@ kmp_search(text, pattern)  # Output: Pattern found at index 10
         return HTMLResponse("<p>Lesson not found.</p>")
     return templates.TemplateResponse("lesson_content.html", {"request": request, "lesson": lesson})
 
+
 def format_title(quiz_id: str) -> str:
     return ' '.join(word.capitalize() for word in quiz_id.replace('_', ' ').split())
+
 
 @app.get("/quiz/{quiz_id}", response_class=HTMLResponse)
 async def read_quiz(request: Request, quiz_id: str):
     formatted_title = format_title(quiz_id)
-    
-    if quiz_id == "arrays":
-        questions = random.sample(array_quiz, 10)
-        encoded_questions = base64.b64encode(json.dumps(questions).encode()).decode()
+
+    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs", "heaps", "tries"]:
+        quiz_data = {
+            "arrays": array_quiz,
+            "linked_lists": linked_list_quiz,
+            "stacks": stack_quiz,
+            "queues": queue_quiz,
+            "hash_tables": hash_table_quiz,
+            "trees": tree_quiz,
+            "graphs": graph_quiz,
+            "heaps": heap_quiz,
+            "tries": trie_quiz
+        }
+        questions = random.sample(quiz_data[quiz_id], 10)
+        encoded_questions = base64.b64encode(
+            json.dumps(questions).encode()).decode()
         quiz_data = {
             "title": f"Quiz on {formatted_title}",
             "description": f"Test your knowledge on {formatted_title}!",
@@ -1129,19 +1230,32 @@ async def read_quiz(request: Request, quiz_id: str):
             "questions": []
         }
         encoded_questions = ""
-    
+
     return templates.TemplateResponse("quiz_template.html", {"request": request, "quiz": quiz_data, "quiz_id": quiz_id, "encoded_questions": encoded_questions})
+
 
 @app.get("/quiz/{quiz_id}/question/{question_index}", response_class=HTMLResponse)
 async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None):
-    if quiz_id == "arrays":
+    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs", "heaps", "tries"]:
         if encoded_questions is None:
             # If encoded_questions is not provided, generate new questions
-            questions = random.sample(array_quiz, 10)
-            encoded_questions = base64.b64encode(json.dumps(questions).encode()).decode()
+            quiz_data = {
+                "arrays": array_quiz,
+                "linked_lists": linked_list_quiz,
+                "stacks": stack_quiz,
+                "queues": queue_quiz,
+                "hash_tables": hash_table_quiz,
+                "trees": tree_quiz,
+                "graphs": graph_quiz,
+                "heaps": heap_quiz,
+                "tries": trie_quiz
+            }
+            questions = random.sample(quiz_data[quiz_id], 10)
+            encoded_questions = base64.b64encode(
+                json.dumps(questions).encode()).decode()
         else:
             questions = json.loads(base64.b64decode(encoded_questions))
-        
+
         if int(question_index) < len(questions):
             question = questions[int(question_index)]
             return templates.TemplateResponse("question.html", {
@@ -1154,9 +1268,10 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
             })
     return HTMLResponse("Quiz completed or not found.")
 
+
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
 async def submit_answer(request: Request, quiz_id: str, question_index: int, answer: str = Form(...), encoded_questions: str = Form(...)):
-    if quiz_id == "arrays":
+    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs", "heaps", "tries"]:
         questions = json.loads(base64.b64decode(encoded_questions))
         if int(question_index) < len(questions):
             question = questions[int(question_index)]
@@ -1172,6 +1287,7 @@ async def submit_answer(request: Request, quiz_id: str, question_index: int, ans
                 "encoded_questions": encoded_questions
             })
     return HTMLResponse("Invalid submission.")
+
 
 @app.post("/quiz/{quiz_id}")
 async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...)):
@@ -1189,11 +1305,12 @@ async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...)):
     question = correct_answers.get(quiz_id, "Quiz question not found.")
     return templates.TemplateResponse("quiz.html", {"request": request, "quiz_id": quiz_id, "question": question, "feedback": feedback})
 
+
 @app.get("/lessons", response_class=HTMLResponse)
 async def list_lessons(request: Request):
     return templates.TemplateResponse("lessons.html", {"request": request})
 
+
 @app.get("/quizzes", response_class=HTMLResponse)
 async def list_quizzes(request: Request):
     return templates.TemplateResponse("quizzes.html", {"request": request})
-
