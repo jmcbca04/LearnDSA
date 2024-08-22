@@ -9,6 +9,7 @@ from queue_quiz_data import queue_quiz
 from hash_table_quiz_data import hash_table_quiz
 from tree_quiz_data import tree_quiz
 from graph_quiz_data import graph_quiz
+from heap_quiz_data import heap_quiz
 import random
 import base64
 import json
@@ -1201,7 +1202,7 @@ def format_title(quiz_id: str) -> str:
 async def read_quiz(request: Request, quiz_id: str):
     formatted_title = format_title(quiz_id)
 
-    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs"]:
+    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs", "heaps"]:
         quiz_data = {
             "arrays": array_quiz,
             "linked_lists": linked_list_quiz,
@@ -1209,7 +1210,8 @@ async def read_quiz(request: Request, quiz_id: str):
             "queues": queue_quiz,
             "hash_tables": hash_table_quiz,
             "trees": tree_quiz,
-            "graphs": graph_quiz
+            "graphs": graph_quiz,
+            "heaps": heap_quiz
         }
         questions = random.sample(quiz_data[quiz_id], 10)
         encoded_questions = base64.b64encode(
@@ -1232,7 +1234,7 @@ async def read_quiz(request: Request, quiz_id: str):
 
 @app.get("/quiz/{quiz_id}/question/{question_index}", response_class=HTMLResponse)
 async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None):
-    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs"]:
+    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs", "heaps"]:
         if encoded_questions is None:
             # If encoded_questions is not provided, generate new questions
             quiz_data = {
@@ -1242,7 +1244,8 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
                 "queues": queue_quiz,
                 "hash_tables": hash_table_quiz,
                 "trees": tree_quiz,
-                "graphs": graph_quiz
+                "graphs": graph_quiz,
+                "heaps": heap_quiz
             }
             questions = random.sample(quiz_data[quiz_id], 10)
             encoded_questions = base64.b64encode(
@@ -1265,7 +1268,7 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
 
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
 async def submit_answer(request: Request, quiz_id: str, question_index: int, answer: str = Form(...), encoded_questions: str = Form(...)):
-    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs"]:
+    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs", "heaps"]:
         questions = json.loads(base64.b64decode(encoded_questions))
         if int(question_index) < len(questions):
             question = questions[int(question_index)]
