@@ -1270,23 +1270,23 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
 
 
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
-async def submit_answer(request: Request, quiz_id: str, question_index: int, answer: str = Form(...), encoded_questions: str = Form(...)):
-    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs", "heaps", "tries"]:
-        questions = json.loads(base64.b64decode(encoded_questions))
-        if int(question_index) < len(questions):
-            question = questions[int(question_index)]
-            is_correct = answer == question['correct_answer']
-            next_question_index = int(question_index) + 1
-            return templates.TemplateResponse("feedback.html", {
-                "request": request,
-                "is_correct": is_correct,
-                "correct_answer": question['correct_answer'],
-                "next_question_index": next_question_index,
-                "quiz_id": quiz_id,
-                "total_questions": len(questions),
-                "encoded_questions": encoded_questions
-            })
-    return HTMLResponse("Invalid submission.")
+async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(...), encoded_questions: str = Form(...)):
+    questions = json.loads(base64.b64decode(encoded_questions).decode('utf-8'))
+    current_question = questions[question_index]
+    is_correct = answer == current_question["correct_answer"]
+    next_question_index = question_index + 1
+    total_questions = len(questions)
+
+    return templates.TemplateResponse("feedback.html", {
+        "request": request,
+        "is_correct": is_correct,
+        "correct_answer": current_question["correct_answer"],
+        "explanation": current_question["explanation"],
+        "next_question_index": next_question_index,
+        "total_questions": total_questions,
+        "quiz_id": quiz_id,
+        "encoded_questions": encoded_questions
+    })
 
 
 @app.post("/quiz/{quiz_id}")
