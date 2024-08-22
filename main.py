@@ -1202,43 +1202,48 @@ def format_title(quiz_id: str) -> str:
 @app.get("/quiz/{quiz_id}", response_class=HTMLResponse)
 async def read_quiz(request: Request, quiz_id: str):
     formatted_title = format_title(quiz_id)
+    quiz_data = {
+        "arrays": array_quiz,
+        "linked_lists": linked_list_quiz,
+        "stacks": stack_quiz,
+        "queues": queue_quiz,
+        "hash_tables": hash_table_quiz,
+        "trees": tree_quiz,
+        "graphs": graph_quiz,
+        "heaps": heap_quiz,
+        "tries": trie_quiz
+    }
 
-    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs", "heaps", "tries"]:
-        quiz_data = {
-            "arrays": array_quiz,
-            "linked_lists": linked_list_quiz,
-            "stacks": stack_quiz,
-            "queues": queue_quiz,
-            "hash_tables": hash_table_quiz,
-            "trees": tree_quiz,
-            "graphs": graph_quiz,
-            "heaps": heap_quiz,
-            "tries": trie_quiz
-        }
-        questions = random.sample(quiz_data[quiz_id], 10)
-        encoded_questions = base64.b64encode(
-            json.dumps(questions).encode()).decode()
-        quiz_data = {
+    if quiz_id in quiz_data:
+        questions = random.sample(quiz_data[quiz_id], min(10, len(quiz_data[quiz_id])))
+        encoded_questions = base64.b64encode(json.dumps(questions).encode()).decode()
+        quiz = {
             "title": f"Quiz on {formatted_title}",
             "description": f"Test your knowledge on {formatted_title}!",
             "questions": questions
         }
     else:
-        quiz_data = {
+        quiz = {
             "title": f"Quiz on {formatted_title}",
             "description": f"Quiz not available for {formatted_title} yet.",
             "questions": []
         }
         encoded_questions = ""
 
-    return templates.TemplateResponse("quiz_template.html", {"request": request, "quiz": quiz_data, "quiz_id": quiz_id, "encoded_questions": encoded_questions})
+    return templates.TemplateResponse("quiz_template.html", {
+        "request": request,
+        "quiz": quiz,
+        "quiz_id": quiz_id,
+        "encoded_questions": encoded_questions
+    })
 
 
 @app.get("/quiz/{quiz_id}/question/{question_index}", response_class=HTMLResponse)
 async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None):
-    if quiz_id in ["arrays", "linked_lists", "stacks", "queues", "hash_tables", "trees", "graphs", "heaps", "tries"]:
-        if encoded_questions is None:
-            # If encoded_questions is not provided, generate new questions
+    try:
+        if encoded_questions:
+            questions = json.loads(base64.b64decode(encoded_questions).decode('utf-8'))
+        else:
             quiz_data = {
                 "arrays": array_quiz,
                 "linked_lists": linked_list_quiz,
@@ -1250,11 +1255,8 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
                 "heaps": heap_quiz,
                 "tries": trie_quiz
             }
-            questions = random.sample(quiz_data[quiz_id], 10)
-            encoded_questions = base64.b64encode(
-                json.dumps(questions).encode()).decode()
-        else:
-            questions = json.loads(base64.b64decode(encoded_questions))
+            questions = random.sample(quiz_data[quiz_id], min(10, len(quiz_data[quiz_id])))
+            encoded_questions = base64.b64encode(json.dumps(questions).encode()).decode()
 
         if int(question_index) < len(questions):
             question = questions[int(question_index)]
@@ -1266,27 +1268,36 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
                 "total_questions": len(questions),
                 "encoded_questions": encoded_questions
             })
-    return HTMLResponse("Quiz completed or not found.")
-
+        return HTMLResponse("Quiz completed.")
+    except Exception as e:
+        return HTMLResponse(f"An error occurred: {str(e)}", status_code=500)
 
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
 async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(...), encoded_questions: str = Form(...)):
     questions = json.loads(base64.b64decode(encoded_questions).decode('utf-8'))
-    current_question = questions[question_index]
+    current_question = questions[int(question_index)]
     is_correct = answer == current_question["correct_answer"]
-    next_question_index = question_index + 1
+    next_question_index = int(question_index) + 1
     total_questions = len(questions)
 
-    return templates.TemplateResponse("feedback.html", {
+    feedback_html = templates.TemplateResponse("feedback.html", {
         "request": request,
         "is_correct": is_correct,
         "correct_answer": current_question["correct_answer"],
-        "explanation": current_question["explanation"],
+        "explanation": current_question.get("explanation", "No explanation provided."),
         "next_question_index": next_question_index,
         "total_questions": total_questions,
         "quiz_id": quiz_id,
         "encoded_questions": encoded_questions
     })
+
+    response = f"""
+    <div id="question-container">
+        {feedback_html.body.decode()}
+    </div>
+    """
+    
+    return HTMLResponse(content=response)
 
 
 @app.post("/quiz/{quiz_id}")
@@ -1314,3 +1325,4 @@ async def list_lessons(request: Request):
 @app.get("/quizzes", response_class=HTMLResponse)
 async def list_quizzes(request: Request):
     return templates.TemplateResponse("quizzes.html", {"request": request})
+
