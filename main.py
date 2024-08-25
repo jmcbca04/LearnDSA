@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -11,6 +11,15 @@ from tree_quiz_data import tree_quiz
 from graph_quiz_data import graph_quiz
 from heap_quiz_data import heap_quiz
 from trie_quiz_data import trie_quiz
+from sorting_algo_quiz_data import sorting_algo_questions
+from searching_algo_quiz_data import searching_algo_questions
+from dynamic_programming_quiz_data import dynamic_programming_questions
+from greedy_algo_quiz_data import greedy_algo_questions
+from divide_and_conquer_quiz_data import divide_and_conquer_questions
+from backtracking_quiz_data import backtracking_questions
+from graph_algo_quiz_data import graph_algo_questions
+from recursive_algo_quiz_data import recursive_algo_questions
+from string_algo_quiz_data import string_algo_questions
 import random
 import base64
 import json
@@ -1211,7 +1220,16 @@ async def read_quiz(request: Request, quiz_id: str):
         "trees": tree_quiz,
         "graphs": graph_quiz,
         "heaps": heap_quiz,
-        "tries": trie_quiz
+        "tries": trie_quiz,
+        "sorting_algorithms": sorting_algo_questions,
+        "searching_algorithms": searching_algo_questions,
+        "dynamic_programming": dynamic_programming_questions,
+        "greedy_algorithms": greedy_algo_questions,
+        "divide_and_conquer": divide_and_conquer_questions,
+        "backtracking": backtracking_questions,
+        "graph_algorithms": graph_algo_questions,
+        "recursive_algorithms": recursive_algo_questions,
+        "string_algorithms": string_algo_questions
     }
 
     if quiz_id in quiz_data:
@@ -1273,31 +1291,42 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
         return HTMLResponse(f"An error occurred: {str(e)}", status_code=500)
 
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
-async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(...), encoded_questions: str = Form(...)):
-    questions = json.loads(base64.b64decode(encoded_questions).decode('utf-8'))
-    current_question = questions[int(question_index)]
-    is_correct = answer == current_question["correct_answer"]
-    next_question_index = int(question_index) + 1
-    total_questions = len(questions)
+async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(None), encoded_questions: str = Form(None)):
+    print(f"Received submission for quiz {quiz_id}, question {question_index}")
+    print(f"Answer: {answer}")
+    print(f"Encoded questions: {encoded_questions}")
 
-    feedback_html = templates.TemplateResponse("feedback.html", {
-        "request": request,
-        "is_correct": is_correct,
-        "correct_answer": current_question["correct_answer"],
-        "explanation": current_question.get("explanation", "No explanation provided."),
-        "next_question_index": next_question_index,
-        "total_questions": total_questions,
-        "quiz_id": quiz_id,
-        "encoded_questions": encoded_questions
-    })
+    if answer is None or encoded_questions is None:
+        raise HTTPException(status_code=422, detail="Missing required form data")
 
-    response = f"""
-    <div id="question-container">
-        {feedback_html.body.decode()}
-    </div>
-    """
-    
-    return HTMLResponse(content=response)
+    try:
+        questions = json.loads(base64.b64decode(encoded_questions).decode('utf-8'))
+        current_question = questions[int(question_index)]
+        is_correct = answer == current_question["correct_answer"]
+        next_question_index = int(question_index) + 1
+        total_questions = len(questions)
+
+        feedback_html = templates.TemplateResponse("feedback.html", {
+            "request": request,
+            "is_correct": is_correct,
+            "correct_answer": current_question["correct_answer"],
+            "explanation": current_question.get("explanation", "No explanation provided."),
+            "next_question_index": next_question_index,
+            "total_questions": total_questions,
+            "quiz_id": quiz_id,
+            "encoded_questions": encoded_questions
+        })
+
+        response = f"""
+        <div id="question-container">
+            {feedback_html.body.decode()}
+        </div>
+        """
+        
+        return HTMLResponse(content=response)
+    except Exception as e:
+        print(f"Error processing quiz submission: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/quiz/{quiz_id}")
