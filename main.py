@@ -11,6 +11,15 @@ from tree_quiz_data import tree_quiz
 from graph_quiz_data import graph_quiz
 from heap_quiz_data import heap_quiz
 from trie_quiz_data import trie_quiz
+from sorting_algo_quiz_data import sorting_algo_questions
+from searching_algo_quiz_data import searching_algo_questions
+from dynamic_programming_quiz_data import dynamic_programming_questions
+from greedy_algo_quiz_data import greedy_algo_questions
+from divide_and_conquer_quiz_data import divide_and_conquer_questions
+from backtracking_quiz_data import backtracking_questions
+from graph_algo_quiz_data import graph_algo_questions
+from recursive_algo_quiz_data import recursive_algo_questions
+from string_algo_quiz_data import string_algo_questions
 import random
 import base64
 import json
@@ -1211,7 +1220,16 @@ async def read_quiz(request: Request, quiz_id: str):
         "trees": tree_quiz,
         "graphs": graph_quiz,
         "heaps": heap_quiz,
-        "tries": trie_quiz
+        "tries": trie_quiz,
+        "sorting_algorithms": sorting_algo_questions,
+        "searching_algorithms": searching_algo_questions,
+        "dynamic_programming": dynamic_programming_questions,
+        "greedy_algorithms": greedy_algo_questions,
+        "divide_and_conquer": divide_and_conquer_questions,
+        "backtracking": backtracking_questions,
+        "graph_algorithms": graph_algo_questions,
+        "recursive_algorithms": recursive_algo_questions,
+        "string_algorithms": string_algo_questions
     }
 
     if quiz_id in quiz_data:
