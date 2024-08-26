@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h1>Logging in...</h1>
+    <script>
+        // Get the access token from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get('access_token');
+
+        if (accessToken) {
+            // Send the token to the parent window
+            window.opener.postMessage({
+                type: 'AUTH_SUCCESS',
+                token: accessToken
+            }, '*');
+            
+            // Close this window
+            window.close();
+        } else {
+            document.body.innerHTML = '<h1>Login failed. Please try again.</h1>';
+        }
+    </script>
+</body>
+</html>

@@ -13,11 +13,63 @@
             <a href="{{ url_for('read_home') }}">Home</a>
             <a href="{{ url_for('list_lessons') }}">Lessons</a>
             <a href="{{ url_for('list_quizzes') }}">Quizzes</a>
+            <span id="userInfo"></span>
+            <a href="#" id="loginLogout" onclick="handleLoginLogout()">Login</a>
         </nav>
     </header>
     <main>
         {% block content %}{% endblock %}
     </main>
+    <script>
+    function updateUI() {
+        const token = localStorage.getItem('token');
+        const userInfo = document.getElementById('userInfo');
+        const loginLogout = document.getElementById('loginLogout');
+        
+        if (token) {
+            fetch('/protected', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                userInfo.textContent = `Welcome, ${data.user.name}!`;
+                loginLogout.textContent = 'Logout';
+            })
+            .catch(() => {
+                localStorage.removeItem('token');
+                userInfo.textContent = '';
+                loginLogout.textContent = 'Login';
+            });
+        } else {
+            userInfo.textContent = '';
+            loginLogout.textContent = 'Login';
+        }
+    }
+
+    function handleLoginLogout() {
+        const token = localStorage.getItem('token');
+        if (token) {
+            localStorage.removeItem('token');
+            updateUI();
+        } else {
+            window.location.href = "{{ url_for('login') }}";
+        }
+    }
+
+    // Call updateUI when the page loads
+    updateUI();
+
+    // Listen for messages from the auth page
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'AUTH_SUCCESS') {
+            localStorage.setItem('token', event.data.token);
+            updateUI();
+            window.location.href = '/';
+        }
+    }, false);
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

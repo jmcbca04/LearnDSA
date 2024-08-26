@@ -1,7 +1,10 @@
-from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi import FastAPI, Request, Form, HTTPException, Depends, Query
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from jose import JWTError
+from dotenv import load_dotenv
+from auth import router as auth_router, get_current_user, oauth2_scheme
 from array_quiz_data import array_quiz
 from linked_list_quiz_data import linked_list_quiz
 from stack_quiz_data import stack_quiz
@@ -23,16 +26,39 @@ from string_algo_quiz_data import string_algo_questions
 import random
 import base64
 import json
+import logging
 
+load_dotenv()
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.include_router(auth_router)
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+async def get_optional_user(token: str = Depends(oauth2_scheme)):
+    try:
+        return await get_current_user(token)
+    except Exception as e:
+        logger.error(f"Error in get_optional_user: {str(e)}")
+        return None
 
 @app.get("/", response_class=HTMLResponse)
-async def read_home(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+async def read_home(request: Request, token: str = Query(None)):
+    user = None
+    if token:
+        user = await get_current_user(token)
+    logger.info(f"User: {user}")
+    return templates.TemplateResponse("home.html", {"request": request, "user": user})
 
+@app.get("/login_page")
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/protected")
+async def protected_route(user: dict = Depends(get_current_user)):
+    return {"message": "This is a protected route", "user": user}
 
 @app.get("/lesson/{lesson_id}", response_class=HTMLResponse)
 async def read_lesson(request: Request, lesson_id: int):
