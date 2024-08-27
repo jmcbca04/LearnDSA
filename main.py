@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from jose import JWTError
 from dotenv import load_dotenv
-from auth import router as auth_router, get_current_user, oauth2_scheme
+from auth import router as auth_router
 from array_quiz_data import array_quiz
 from linked_list_quiz_data import linked_list_quiz
 from stack_quiz_data import stack_quiz
@@ -27,6 +27,8 @@ import random
 import base64
 import json
 import logging
+from shared import logger, get_current_user, get_optional_user, oauth2_scheme
+from fastapi.security import OAuth2PasswordBearer
 
 load_dotenv()
 app = FastAPI()
@@ -34,27 +36,12 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_router)
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-async def get_optional_user(token: str = Depends(oauth2_scheme)):
-    try:
-        return await get_current_user(token)
-    except Exception as e:
-        logger.error(f"Error in get_optional_user: {str(e)}")
-        return None
-
-@app.get("/", response_class=HTMLResponse)
-async def read_home(request: Request, token: str = Query(None)):
-    user = None
-    if token:
-        user = await get_current_user(token)
-    logger.info(f"User: {user}")
-    return templates.TemplateResponse("home.html", {"request": request, "user": user})
-
-@app.get("/login_page")
-async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+@app.get("/")
+async def read_home(request: Request, user: dict = Depends(get_optional_user)):
+    if user:
+        return templates.TemplateResponse("home.html", {"request": request, "user": user})
+    else:
+        return templates.TemplateResponse("home.html", {"request": request})
 
 @app.get("/protected")
 async def protected_route(user: dict = Depends(get_current_user)):
@@ -776,6 +763,11 @@ def bubble_sort(arr):
 # Usage
 arr = [64, 34, 25, 12, 22, 11, 90]
 bubble_sort(arr)
+```
+        }
+    }
+
+    return lessons.get(lesson_id)
 print(arr)  # Output: [11, 12, 22, 25, 34, 64, 90]
             """
         },
@@ -1318,9 +1310,9 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
 
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
 async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(None), encoded_questions: str = Form(None)):
-    print(f"Received submission for quiz {quiz_id}, question {question_index}")
-    print(f"Answer: {answer}")
-    print(f"Encoded questions: {encoded_questions}")
+    logger.debug(f"Received submission for quiz {quiz_id}, question {question_index}")
+    logger.debug(f"Answer: {answer}")
+    logger.debug(f"Encoded questions: {encoded_questions}")
 
     if answer is None or encoded_questions is None:
         raise HTTPException(status_code=422, detail="Missing required form data")
@@ -1351,7 +1343,7 @@ async def submit_quiz(request: Request, quiz_id: str, question_index: int, answe
         
         return HTMLResponse(content=response)
     except Exception as e:
-        print(f"Error processing quiz submission: {str(e)}")
+        logger.error(f"Error processing quiz submission: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
