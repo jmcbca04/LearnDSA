@@ -2,4 +2,27 @@
 {% block content %}
 <h1>Welcome to LearnDSA</h1>
 <p>Your journey to mastering data structures and algorithms starts here.</p>
+
+{% if user %}
+    <p>Hello, {{ user.name }}! Ready to continue your learning journey?</p>
+    <a href="{{ url_for('list_lessons') }}" class="btn btn-primary">Go to Lessons</a>
+    <a href="{{ url_for('list_quizzes') }}" class="btn btn-secondary">Take a Quiz</a>
+{% else %}
+    <p>Please <a href="{{ url_for('login') }}">log in</a> to track your progress and access all features.</p>
+    <p>Or explore as a guest:</p>
+    <a href="{{ url_for('list_lessons') }}" class="btn btn-outline-primary">Browse Lessons</a>
+    <a href="{{ url_for('list_quizzes') }}" class="btn btn-outline-secondary">Try a Quiz</a>
+{% endif %}
+
+<script>
+    // Store the token in localStorage if it's in the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+        localStorage.setItem('token', token);
+        // Remove the token from the URL
+        window.history.replaceState({}, document.title, "/");
+    }
+</script>
+
 {% endblock %}
