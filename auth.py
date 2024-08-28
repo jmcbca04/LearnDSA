@@ -41,6 +41,8 @@ async def login(request: Request):
     state = secrets.token_urlsafe(16)
     auth_url = f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={GOOGLE_CLIENT_ID}&redirect_uri={GOOGLE_REDIRECT_URI}&scope=openid%20email%20profile&state={state}"
     logger.debug(f"Login URL: {auth_url}")
+    logger.debug(f"Redirect URI: {GOOGLE_REDIRECT_URI}")
+    logger.debug(f"Client ID: {GOOGLE_CLIENT_ID}")
     return RedirectResponse(url=auth_url)
 
 @router.get('/auth')
