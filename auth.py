@@ -12,10 +12,18 @@ router = APIRouter()
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = "http://localhost:8000/auth"
 
-print(f"Loaded GOOGLE_CLIENT_ID: {GOOGLE_CLIENT_ID}")
-logger.debug(f"Using GOOGLE_CLIENT_ID: {GOOGLE_CLIENT_ID}")
+# Determine the environment
+IS_PRODUCTION = os.getenv("ENVIRONMENT") == "production"
+
+# Set the appropriate redirect URI
+if IS_PRODUCTION:
+    GOOGLE_REDIRECT_URI = "https://learn-dsa-e9260d94725b.herokuapp.com/auth"
+else:
+    GOOGLE_REDIRECT_URI = "http://localhost:8000/auth"
+
+print(f"Using GOOGLE_REDIRECT_URI: {GOOGLE_REDIRECT_URI}")
+logger.debug(f"Using GOOGLE_REDIRECT_URI: {GOOGLE_REDIRECT_URI}")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
