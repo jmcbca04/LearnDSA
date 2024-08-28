@@ -12,7 +12,10 @@ router = APIRouter()
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = "http://localhost:8000/auth"  # Update this to your actual redirect URI
+GOOGLE_REDIRECT_URI = "http://localhost:8000/auth"
+
+print(f"Loaded GOOGLE_CLIENT_ID: {GOOGLE_CLIENT_ID}")
+logger.debug(f"Using GOOGLE_CLIENT_ID: {GOOGLE_CLIENT_ID}")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -29,12 +32,21 @@ def create_access_token(data: dict):
 async def login(request: Request):
     state = secrets.token_urlsafe(16)
     auth_url = f"https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={GOOGLE_CLIENT_ID}&redirect_uri={GOOGLE_REDIRECT_URI}&scope=openid%20email%20profile&state={state}"
+    logger.debug(f"Login URL: {auth_url}")
     return RedirectResponse(url=auth_url)
 
 @router.get('/auth')
 async def auth(request: Request):
     code = request.query_params.get("code")
     state = request.query_params.get("state")
+    error = request.query_params.get("error")
+
+    logger.debug(f"Received code: {code}")
+    logger.debug(f"Received state: {state}")
+    logger.debug(f"Received error: {error}")
+
+    if error:
+        raise HTTPException(status_code=400, detail=f"Authorization error: {error}")
 
     if not code or not state:
         raise HTTPException(status_code=400, detail="Missing code or state")
@@ -49,10 +61,18 @@ async def auth(request: Request):
         "redirect_uri": GOOGLE_REDIRECT_URI
     }
 
+    logger.debug(f"Token exchange request data: {data}")
+
     async with httpx.AsyncClient() as client:
         response = await client.post(token_url, data=data)
         if response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to retrieve token")
+            error_detail = response.json()
+            logger.error(f"Failed to retrieve token. Status: {response.status_code}, Details: {error_detail}")
+            logger.error(f"Response headers: {response.headers}")
+            logger.error(f"Full response content: {response.text}")  # Add this line
+            if response.status_code == 401:
+                raise HTTPException(status_code=400, detail=f"Unauthorized. Check your client ID and secret. Error: {error_detail}")
+            raise HTTPException(status_code=400, detail=f"Failed to retrieve token: {error_detail}")
         token_data = response.json()
 
     # Get user info
@@ -62,7 +82,9 @@ async def auth(request: Request):
     async with httpx.AsyncClient() as client:
         response = await client.get(user_info_url, headers=headers)
         if response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to retrieve user info")
+            error_detail = response.json()
+            logger.error(f"Failed to retrieve user info. Status: {response.status_code}, Details: {error_detail}")
+            raise HTTPException(status_code=400, detail=f"Failed to retrieve user info: {error_detail}")
         user_info = response.json()
 
     # Create a JWT token
