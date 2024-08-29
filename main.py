@@ -1,8 +1,7 @@
-from fastapi import FastAPI, Request, Form, HTTPException, Depends, Query
+from fastapi import FastAPI, Request, Form, HTTPException, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from jose import JWTError
 from dotenv import load_dotenv
 from auth import router as auth_router
 from array_quiz_data import array_quiz
@@ -26,15 +25,39 @@ from string_algo_quiz_data import string_algo_questions
 import random
 import base64
 import json
-import logging
-from shared import logger, get_current_user, get_optional_user, oauth2_scheme
+from shared import logger, get_current_user, get_optional_user, oauth2_scheme, init_db, get_user_count, get_total_logins
 from fastapi.security import OAuth2PasswordBearer
+from contextlib import asynccontextmanager
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
-app = FastAPI()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Initializing database")
+    init_db()
+    logger.info("Database initialized")
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
+
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_router)
+
+
+@app.get("/user-stats")
+async def user_stats():
+    user_count = await get_user_count()
+    total_logins = await get_total_logins()
+    logger.info(f"User stats: count={user_count}, total_logins={total_logins}")
+    return {"total_users": user_count, "total_logins": total_logins}
+
 
 @app.get("/")
 async def read_home(request: Request, user: dict = Depends(get_optional_user)):
