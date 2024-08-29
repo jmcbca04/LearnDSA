@@ -28,13 +28,19 @@ import json
 from shared import logger, get_current_user, get_optional_user, oauth2_scheme, init_db, get_user_count, get_total_logins
 from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("Initializing database")
     init_db()
+    logger.info("Database initialized")
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -45,15 +51,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_router)
 
 
-@app.on_event("startup")
-async def startup_event():
-    init_db()
-
-
 @app.get("/user-stats")
 async def user_stats():
     user_count = await get_user_count()
     total_logins = await get_total_logins()
+    logger.info(f"User stats: count={user_count}, total_logins={total_logins}")
     return {"total_users": user_count, "total_logins": total_logins}
 
 

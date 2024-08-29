@@ -28,9 +28,10 @@ def init_db():
         conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             email TEXT PRIMARY KEY,
-            login_count INTEGER
+            login_count INTEGER DEFAULT 0
         )
         """)
+        conn.commit()
 
 
 async def record_user_login(email: str):
@@ -41,17 +42,21 @@ async def record_user_login(email: str):
         ON CONFLICT(email) DO UPDATE SET login_count = login_count + 1
         """, (email,))
         conn.commit()
-    logger.info("Login recorded successfully")
+    logger.info(f"Login recorded for email: {email}")
 
 
 async def get_user_count():
     with get_db() as conn:
-        return conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        logger.info(f"User count: {count}")
+        return count
 
 
 async def get_total_logins():
     with get_db() as conn:
-        return conn.execute("SELECT SUM(login_count) FROM users").fetchone()[0] or 0
+        total = conn.execute("SELECT SUM(login_count) FROM users").fetchone()[0] or 0
+        logger.info(f"Total logins: {total}")
+        return total
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 

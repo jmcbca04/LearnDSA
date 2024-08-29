@@ -5,8 +5,12 @@ import os
 from datetime import datetime, timedelta
 import secrets
 import httpx
-from shared import logger, JWT_SECRET_KEY, ALGORITHM
+import logging
+from shared import logger, JWT_SECRET_KEY, ALGORITHM, record_user_login
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -95,6 +99,11 @@ async def auth(request: Request):
             raise HTTPException(status_code=400, detail=f"Failed to retrieve user info: {error_detail}")
         user_info = response.json()
 
+    # After successfully authenticating the user:
+    user_email = user_info['email']
+    logger.info(f"User authenticated: {user_email}")
+    await record_user_login(user_email)
+
     # Create a JWT token
     access_token = create_access_token({"sub": user_info["email"], "name": user_info.get("name"), "email": user_info["email"]})
     
@@ -110,3 +119,16 @@ async def protected_route(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
     except jwt.JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+@router.post("/login")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
+    access_token = create_access_token(data={"sub": user.username})
+    logger.info(f"User logged in: {user.email}")
+    await record_user_login(user.email)
+    return {"access_token": access_token, "token_type": "bearer"}
