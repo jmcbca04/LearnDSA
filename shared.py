@@ -1,5 +1,7 @@
-from jose import jwt, JWTError, ExpiredSignatureError
 import os
+from dotenv import load_dotenv
+import psycopg2
+from psycopg2.extras import DictCursor
 import logging
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
@@ -12,11 +14,14 @@ logger = logging.getLogger(__name__)
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 
-DB_NAME = "user_logins.db"
+# Load environment variables from .env file
+load_dotenv()
+
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 @contextmanager
 def get_db():
-    conn = sqlite3.connect(DB_NAME)
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     try:
         yield conn
     finally:
@@ -25,38 +30,39 @@ def get_db():
 
 def init_db():
     with get_db() as conn:
-        conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            email TEXT PRIMARY KEY,
-            login_count INTEGER DEFAULT 0
-        )
-        """)
+        with conn.cursor() as cur:
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                email TEXT PRIMARY KEY,
+                login_count INTEGER DEFAULT 0
+            )
+            """)
         conn.commit()
 
 
 async def record_user_login(email: str):
-    logger.info(f"Recording login for email: {email}")
     with get_db() as conn:
-        conn.execute("""
-        INSERT INTO users (email, login_count) VALUES (?, 1)
-        ON CONFLICT(email) DO UPDATE SET login_count = login_count + 1
-        """, (email,))
+        with conn.cursor() as cur:
+            cur.execute("""
+            INSERT INTO users (email, login_count) VALUES (%s, 1)
+            ON CONFLICT (email) DO UPDATE SET login_count = users.login_count + 1
+            """, (email,))
         conn.commit()
     logger.info(f"Login recorded for email: {email}")
 
 
 async def get_user_count():
     with get_db() as conn:
-        count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
-        logger.info(f"User count: {count}")
-        return count
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM users")
+            return cur.fetchone()[0]
 
 
 async def get_total_logins():
     with get_db() as conn:
-        total = conn.execute("SELECT SUM(login_count) FROM users").fetchone()[0] or 0
-        logger.info(f"Total logins: {total}")
-        return total
+        with conn.cursor() as cur:
+            cur.execute("SELECT SUM(login_count) FROM users")
+            return cur.fetchone()[0] or 0
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 

@@ -43,6 +43,7 @@ async def lifespan(app: FastAPI):
     logger.info("Database initialized")
     yield
 
+
 app = FastAPI(lifespan=lifespan)
 
 
