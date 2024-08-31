@@ -5,7 +5,6 @@ from psycopg2.extras import DictCursor
 import logging
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
-import sqlite3
 from contextlib import contextmanager
 
 logging.basicConfig(level=logging.INFO)

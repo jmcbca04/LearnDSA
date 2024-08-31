@@ -14,12 +14,15 @@
             <a href="{{ url_for('list_lessons') }}">Lessons</a>
             <a href="{{ url_for('list_quizzes') }}">Quizzes</a>
             <span id="userInfo"></span>
-            <a href="#" id="loginLogout" onclick="handleLoginLogout()">Login</a>
+            <a href="#" id="loginLogout" hx-get="/login-modal" hx-target="#loginModal" hx-swap="innerHTML">Login</a>
         </nav>
     </header>
     <main>
         {% block content %}{% endblock %}
     </main>
+
+    <div id="loginModal"></div>
+
     <script>
     function updateUI() {
         const token = localStorage.getItem('token');
@@ -36,26 +39,38 @@
             .then(data => {
                 userInfo.textContent = `Welcome, ${data.user.name}!`;
                 loginLogout.textContent = 'Logout';
+                loginLogout.removeAttribute('hx-get');
+                loginLogout.removeAttribute('hx-target');
+                loginLogout.removeAttribute('hx-swap');
+                loginLogout.onclick = handleLogout;
             })
             .catch(() => {
                 localStorage.removeItem('token');
                 userInfo.textContent = '';
                 loginLogout.textContent = 'Login';
+                setupLoginButton(loginLogout);
             });
         } else {
             userInfo.textContent = '';
             loginLogout.textContent = 'Login';
+            setupLoginButton(loginLogout);
         }
     }
 
-    function handleLoginLogout() {
-        const token = localStorage.getItem('token');
-        if (token) {
-            localStorage.removeItem('token');
-            updateUI();
-        } else {
-            window.location.href = "{{ url_for('login') }}";
-        }
+    function setupLoginButton(button) {
+        button.setAttribute('hx-get', '/login-modal');
+        button.setAttribute('hx-target', '#loginModal');
+        button.setAttribute('hx-swap', 'innerHTML');
+        button.onclick = null;
+    }
+
+    function handleLogout() {
+        localStorage.removeItem('token');
+        updateUI();
+    }
+
+    function closeModal() {
+        document.getElementById('loginModal').innerHTML = '';
     }
 
     // Call updateUI when the page loads

@@ -66,6 +66,10 @@ async def read_home(request: Request, user: dict = Depends(get_optional_user)):
         return templates.TemplateResponse("home.html", {"request": request, "user": user})
     else:
         return templates.TemplateResponse("home.html", {"request": request})
+      
+@app.get("/login-modal", response_class=HTMLResponse)
+async def login_modal(request: Request):
+    return templates.TemplateResponse("login_modal.html", {"request": request})
 
 @app.get("/protected")
 async def protected_route(user: dict = Depends(get_current_user)):
