@@ -1,226 +1,303 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
+  line-height: 1.6;
+  color: var(--color);
+  background-color: var(--background-color);
   margin: 0;
   padding: 0;
-  line-height: 1.6;
+  padding-top: 60px; /* Add this line to create space for the fixed header */
 }
 
 header {
-  background-color: #333;
-  color: #fff;
-  padding: 10px 0;
-  text-align: center;
+  background-color: #2c3e50;
+  padding: 0.5rem 1rem;
   position: fixed;
   width: 100%;
   top: 0;
+  left: 0;
   z-index: 1000;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  font-size: 0.9rem;
+  height: 60px; /* Add this line to set a fixed height for the header */
+}
+
+header nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px; /* Add this line to limit the width */
+  margin: 0 auto; /* Add this line to center the nav */
+}
+
+header nav ul {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+header nav ul li {
+  margin-left: 1rem;
 }
 
 nav a {
-  color: #fff;
-  margin: 0 15px;
+  color: #3498db;
   text-decoration: none;
   font-weight: bold;
+  transition: color 0.3s ease;
 }
 
 nav a:hover {
-  text-decoration: underline;
+  color: #ffffff;
 }
 
 main {
-  padding: 20px;
-  background-color: #fff;
-  margin-top: 60px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto 2rem; /* Remove top margin and rely on body padding */
+  background-color: var(--card-background-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: var(--border-radius);
 }
 
 h1 {
-  color: #333;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--color);
 }
 
-/* Responsive adjustments */
-@media (max-width: 600px) {
-  header {
-    padding: 5px 0;
-  }
-
-  nav a {
-    margin: 0 10px;
-  }
-
-  main {
-    padding: 10px;
-    margin-top: 50px;
-  }
-
-  h1 {
-    font-size: 1.5em; /* Smaller font size for headers */
-  }
-
-  .lessons-container {
-    display: block; /* Stack vertically on small screens */
-  }
-
-  .lessons-list, .lesson-content {
-    max-width: 100%; /* Full width for small screens */
-    flex: none;
-  }
-
-  .lesson-content {
-    padding: 10px;
-    min-height: auto; /* Adjust height as needed */
-  }
+.button-container {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
 }
 
-/* Additional styles for better readability */
-.lessons-list {
-  flex: 1;
-  max-width: 300px;
-}
-
-.lesson-content {
-  flex: 2;
-  padding: 1rem;
-  border: 1px solid #ccc;
+.button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--primary);
   border-radius: 5px;
-  min-height: 300px;
-}
-
-form {
-  margin-top: 20px;
-}
-
-form label {
+  text-decoration: none;
+  color: var(--primary);
   font-weight: bold;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-form input[type="text"] {
-  padding: 5px;
-  margin-right: 10px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
+.button:hover {
+  background-color: var(--primary);
+  color: var(--primary-inverse);
 }
 
-form button {
-  padding: 5px 10px;
+.button.secondary {
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.button.secondary:hover {
+  background-color: var(--secondary);
+  color: var(--secondary-inverse);
+}
+
+.button.outline {
+  background-color: transparent;
+}
+
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: var(--card-background-color);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  width: 300px;
+  text-align: center;
+}
+
+.google-login-btn {
+  display: inline-block;
+  background-color: #4285F4;
+  color: white;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  border-radius: var(--border-radius);
+  margin-top: 1rem;
+  transition: background-color 0.3s;
+}
+
+.google-login-btn:hover {
+  background-color: #357ae8;
+}
+
+.close-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--secondary);
+  color: white;
   border: none;
-  background-color: #333;
-  color: #fff;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  border-radius: 3px;
+  transition: background-color 0.3s;
 }
 
-form button:hover {
-  background-color: #555;
+.close-btn:hover {
+  background-color: var(--secondary-hover);
 }
 
 .code-container {
-    background-color: #f4f4f4; /* Light grey background */
-    border: 1px solid #ccc; /* Light grey border */
-    padding: 10px;
-    overflow-x: auto; /* Enables horizontal scrolling */
-    white-space: nowrap; /* Keeps the code in a single line */
-    max-width: 100%; /* Ensures the container does not exceed the viewport width */
-}
-
-@media (max-width: 600px) {
-    .code-container {
-        font-size: 12px; /* Smaller font size for better readability on small screens */
-        padding: 8px; /* Slightly reduced padding */
-    }
+  background-color: var(--code-background-color);
+  border: 1px solid var(--form-element-border-color);
+  padding: 1rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+  margin: 1rem 0;
 }
 
 #feedback {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 5px;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: var(--card-background-color);
 }
 
 #feedback .correct {
-  color: green;
+  color: var(--form-element-valid-color);
   font-weight: bold;
 }
 
 #feedback .incorrect {
-  color: red;
+  color: var(--form-element-invalid-color);
   font-weight: bold;
 }
 
-.next-question-btn {
-  margin-top: 15px;
-  padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
+.next-question-btn, .back-to-quizzes-btn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--primary);
+  color: var(--primary-inverse);
   border: none;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   cursor: pointer;
-}
-
-.next-question-btn:hover {
-  background-color: #0056b3;
-}
-
-.back-to-quizzes-btn {
-  display: inline-block;
-  margin-top: 15px;
-  padding: 10px 15px;
-  background-color: #28a745;
-  color: white;
   text-decoration: none;
-  border-radius: 5px;
-  cursor: pointer;
+  display: inline-block;
+  transition: background-color 0.3s;
 }
 
-.back-to-quizzes-btn:hover {
-  background-color: #218838;
+.next-question-btn:hover, .back-to-quizzes-btn:hover {
+  background-color: var(--primary-hover);
 }
 
-.modal {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.4);
-    display: flex;
-    justify-content: center;
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  body {
+    padding-top: 50px; /* Slightly reduce padding for mobile */
+  }
+
+  header {
+    height: 50px; /* Reduce header height for mobile */
+  }
+
+  header {
+    padding: 0.5rem;
+  }
+
+  header nav {
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
-}
+  }
 
-.modal-content {
-    background-color: #fefefe;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 300px;
+  header nav ul {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  header nav ul li {
+    margin: 0 0.5rem;
+  }
+
+  main {
+    padding: 1rem;
+    margin-top: 4rem; /* Increased top margin for mobile */
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .button-container {
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
     text-align: center;
+  }
+
+  .code-container {
+    font-size: 0.9em;
+    padding: 0.75rem;
+  }
 }
 
-.google-login-btn {
-    display: inline-block;
-    background-color: #4285F4;
-    color: white;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-top: 20px;
+/* Additional improvements */
+#userInfo {
+  margin-right: 1rem;
 }
 
-.google-login-btn:hover {
-    background-color: #357ae8;
+.container-fluid {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-.close-btn {
-    margin-top: 10px;
-    padding: 5px 10px;
-    background-color: #f44336;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
+.container {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-.close-btn:hover {
-    background-color: #d32f2f;
+/* Improve readability of code blocks */
+pre, code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+/* Improve form elements */
+input, select, textarea {
+  margin-bottom: 1rem;
+}
+
+/* Improve table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+th, td {
+  padding: 0.5rem;
+  border: 1px solid var(--form-element-border-color);
+}
+
+th {
+  background-color: var(--secondary-background-color);
+}
+
+/* Add this media query for larger screens */
+@media (min-width: 1200px) {
+  header nav {
+    padding: 0 2rem; /* Add some padding on larger screens */
+  }
 }

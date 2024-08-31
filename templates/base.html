@@ -1,23 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LearnDSA</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 <body>
     <header>
         <nav>
-            <a href="{{ url_for('read_home') }}">Home</a>
-            <a href="{{ url_for('list_lessons') }}">Lessons</a>
-            <a href="{{ url_for('list_quizzes') }}">Quizzes</a>
-            <span id="userInfo"></span>
-            <a href="#" id="loginLogout" hx-get="/login-modal" hx-target="#loginModal" hx-swap="innerHTML">Login</a>
+            <ul>
+                <li><strong>LearnDSA</strong></li>
+            </ul>
+            <ul>
+                <li><a href="{{ url_for('read_home') }}">Home</a></li>
+                <li><a href="{{ url_for('list_lessons') }}">Lessons</a></li>
+                <li><a href="{{ url_for('list_quizzes') }}">Quizzes</a></li>
+                <li><span id="userInfo"></span></li>
+                <li><a href="#" id="loginLogout" hx-get="/login-modal" hx-target="#loginModal" hx-swap="innerHTML">Login</a></li>
+            </ul>
         </nav>
     </header>
-    <main>
+    <main class="container">
         {% block content %}{% endblock %}
     </main>
 
