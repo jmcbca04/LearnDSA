@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Lessons</h1>
 <div class="lessons-container">
     <div class="lessons-list">
         <section id="data-structures">
@@ -34,18 +33,31 @@
         </section>
     </div>
 
-    <div id="lesson-content" class="lesson-content">
-        <p>Select a lesson from the list to view its content.</p>
+    <div id="lesson-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="lesson-content" class="lesson-content">
+                <p>Select a lesson from the list to view its content.</p>
+            </div>
+        </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-    document.body.addEventListener('htmx:afterSwap', function(event) {
-        if (event.detail.target.id === 'lesson-content') {
-            event.detail.target.scrollIntoView({ behavior: 'smooth' });
+document.addEventListener('htmx:afterSwap', function(event) {
+    if (event.detail.target.id === 'lesson-content') {
+        const lessonModal = document.getElementById('lesson-modal');
+        if (lessonModal) {
+            lessonModal.style.display = 'block';
         }
-    });
+    }
+});
+
+document.addEventListener('click', function(event) {
+    const lessonModal = document.getElementById('lesson-modal');
+    if (event.target.classList.contains('close') || event.target === lessonModal) {
+        lessonModal.style.display = 'none';
+    }
+});
 </script>
 {% endblock %}
