@@ -19,7 +19,7 @@
                 <li><a href="{{ url_for('list_lessons') }}">Lessons</a></li>
                 <li><a href="{{ url_for('list_quizzes') }}">Quizzes</a></li>
                 <li><span id="userInfo"></span></li>
-                <li><a href="#" id="loginLogout" hx-get="/login-modal" hx-target="#loginModal" hx-swap="innerHTML">Login</a></li>
+                <li><a href="{{ url_for('login') }}" id="loginLogout">Sign in</a></li>
             </ul>
         </nav>
     </header>
@@ -27,13 +27,13 @@
         {% block content %}{% endblock %}
     </main>
 
-    <div id="loginModal"></div>
-
     <script>
     function updateUI() {
         const token = localStorage.getItem('token');
         const userInfo = document.getElementById('userInfo');
         const loginLogout = document.getElementById('loginLogout');
+        
+        console.log("UpdateUI called, token:", token ? "exists" : "doesn't exist");
         
         if (token) {
             fetch('/protected', {
@@ -45,51 +45,51 @@
             .then(data => {
                 userInfo.textContent = `Welcome, ${data.user.name}!`;
                 loginLogout.textContent = 'Logout';
-                loginLogout.removeAttribute('hx-get');
-                loginLogout.removeAttribute('hx-target');
-                loginLogout.removeAttribute('hx-swap');
+                loginLogout.href = '#';
                 loginLogout.onclick = handleLogout;
             })
             .catch(() => {
                 localStorage.removeItem('token');
                 userInfo.textContent = '';
                 loginLogout.textContent = 'Login';
-                setupLoginButton(loginLogout);
+                loginLogout.href = "{{ url_for('login') }}";
+                loginLogout.onclick = null;
             });
         } else {
             userInfo.textContent = '';
-            loginLogout.textContent = 'Login';
-            setupLoginButton(loginLogout);
+            loginLogout.textContent = 'Sign in';
+            loginLogout.href = "{{ url_for('login') }}";
+            loginLogout.onclick = null;
         }
     }
 
-    function setupLoginButton(button) {
-        button.setAttribute('hx-get', '/login-modal');
-        button.setAttribute('hx-target', '#loginModal');
-        button.setAttribute('hx-swap', 'innerHTML');
-        button.onclick = null;
-    }
-
     function handleLogout() {
+        console.log("Logout handled");
         localStorage.removeItem('token');
         updateUI();
-    }
-
-    function closeModal() {
-        document.getElementById('loginModal').innerHTML = '';
+        return false;
     }
 
     // Call updateUI when the page loads
-    updateUI();
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM loaded, updating UI");
+        updateUI();
+    });
 
     // Listen for messages from the auth page
     window.addEventListener('message', function(event) {
+        console.log("Received message:", event.data);
         if (event.data.type === 'AUTH_SUCCESS') {
             localStorage.setItem('token', event.data.token);
             updateUI();
             window.location.href = '/';
         }
     }, false);
+
+    // Add this to debug htmx events
+    document.body.addEventListener('htmx:afterOnLoad', function(event) {
+        console.log("htmx:afterOnLoad event", event);
+    });
     </script>
     {% block extra_js %}{% endblock %}
 </body>

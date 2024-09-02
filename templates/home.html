@@ -10,7 +10,7 @@
         <a href="{{ url_for('list_quizzes') }}" class="button secondary">Take a Quiz</a>
     </div>
 {% else %}
-    <p>Please <a href="#" hx-get="/login-modal" hx-target="#loginModal" hx-swap="innerHTML">log in</a> to track your progress and access all features.</p>
+    <p>Please <a href="{{ url_for('login') }}">sign in</a> to track your progress and access all features.</p>
     <p>Or explore as a guest:</p>
     <div class="button-container">
         <a href="{{ url_for('list_lessons') }}" class="button outline">Browse Lessons</a>
