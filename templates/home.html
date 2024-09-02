@@ -10,7 +10,7 @@
         <a href="{{ url_for('list_quizzes') }}" class="button secondary">Take a Quiz</a>
     </div>
 {% else %}
-    <p>Please <a href="{{ url_for('login') }}">sign in</a> to track your progress and access all features.</p>
+    <p>Please <a href="#" onclick="showLoginModal(); return false;">sign in</a> to track your progress and access all features.</p>
     <p>Or explore as a guest:</p>
     <div class="button-container">
         <a href="{{ url_for('list_lessons') }}" class="button outline">Browse Lessons</a>
@@ -26,6 +26,14 @@
         localStorage.setItem('token', token);
         // Remove the token from the URL
         window.history.replaceState({}, document.title, "/");
+    }
+
+    // Add this function to show the login modal
+    function showLoginModal() {
+        const loginModal = document.getElementById('loginModal');
+        if (loginModal) {
+            loginModal.style.display = 'block';
+        }
     }
 </script>
 {% endblock %}
