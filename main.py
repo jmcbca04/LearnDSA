@@ -67,9 +67,16 @@ async def read_home(request: Request, user: dict = Depends(get_optional_user)):
     else:
         return templates.TemplateResponse("home.html", {"request": request})
 
+
+@app.get("/login-modal", response_class=HTMLResponse)
+async def login_modal(request: Request):
+    return templates.TemplateResponse("login_modal.html", {"request": request})
+
+
 @app.get("/protected")
 async def protected_route(user: dict = Depends(get_current_user)):
     return {"message": "This is a protected route", "user": user}
+
 
 @app.get("/lesson/{lesson_id}", response_class=HTMLResponse)
 async def read_lesson(request: Request, lesson_id: int):
@@ -434,14 +441,14 @@ class BinarySearchTree:
     def insert(self, value):
         if not self.root:
             self.root = Node(value)
-        else:
+    else:
             self._insert_recursive(self.root, value)
 
     def _insert_recursive(self, node, value):
         if value < node.value:
             if node.left is None:
                 node.left = Node(value)
-            else:
+        else:
                 self._insert_recursive(node.left, value)
         else:
             if node.right is None:
@@ -532,7 +539,7 @@ class Graph:
             self.add_vertex(vertex1)
         if vertex2 not in self.graph:
             self.add_vertex(vertex2)
-        self.graph[vertex1].append(vertex2)
+            self.graph[vertex1].append(vertex2)
         self.graph[vertex2].append(vertex1)  # For undirected graph
 
     def remove_edge(self, vertex1, vertex2):
@@ -1062,7 +1069,7 @@ def print_board(board):
 n = 4
 board = [[0] * n for _ in range(n)]
 if solve_n_queens(board, 0, n):
-    print_board(board)
+print_board(board)
 else:
     print("No solution exists.")
             """
@@ -1209,9 +1216,9 @@ def kmp_search(text, pattern):
         if pattern[j] == text[i]:
             i += 1
             j += 1
-        if j == m:
-            print("Pattern found at index", i-j)
-            j = lps[j-1]
+            if j == m:
+                print("Pattern found at index", i-j)
+                j = lps[j-1]
         elif i < n and pattern[j] != text[i]:
             if j != 0:
                 j = lps[j-1]
@@ -1275,8 +1282,10 @@ async def read_quiz(request: Request, quiz_id: str):
     }
 
     if quiz_id in quiz_data:
-        questions = random.sample(quiz_data[quiz_id], min(10, len(quiz_data[quiz_id])))
-        encoded_questions = base64.b64encode(json.dumps(questions).encode()).decode()
+        questions = random.sample(
+            quiz_data[quiz_id], min(10, len(quiz_data[quiz_id])))
+        encoded_questions = base64.b64encode(
+            json.dumps(questions).encode()).decode()
         quiz = {
             "title": f"Quiz on {formatted_title}",
             "description": f"Test your knowledge on {formatted_title}!",
@@ -1302,7 +1311,8 @@ async def read_quiz(request: Request, quiz_id: str):
 async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None):
     try:
         if encoded_questions:
-            questions = json.loads(base64.b64decode(encoded_questions).decode('utf-8'))
+            questions = json.loads(base64.b64decode(
+                encoded_questions).decode('utf-8'))
         else:
             quiz_data = {
                 "arrays": array_quiz,
@@ -1315,8 +1325,10 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
                 "heaps": heap_quiz,
                 "tries": trie_quiz
             }
-            questions = random.sample(quiz_data[quiz_id], min(10, len(quiz_data[quiz_id])))
-            encoded_questions = base64.b64encode(json.dumps(questions).encode()).decode()
+            questions = random.sample(
+                quiz_data[quiz_id], min(10, len(quiz_data[quiz_id])))
+            encoded_questions = base64.b64encode(
+                json.dumps(questions).encode()).decode()
 
         if int(question_index) < len(questions):
             question = questions[int(question_index)]
@@ -1332,17 +1344,21 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
     except Exception as e:
         return HTMLResponse(f"An error occurred: {str(e)}", status_code=500)
 
+
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
 async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(None), encoded_questions: str = Form(None)):
-    logger.debug(f"Received submission for quiz {quiz_id}, question {question_index}")
+    logger.debug(
+        f"Received submission for quiz {quiz_id}, question {question_index}")
     logger.debug(f"Answer: {answer}")
     logger.debug(f"Encoded questions: {encoded_questions}")
 
     if answer is None or encoded_questions is None:
-        raise HTTPException(status_code=422, detail="Missing required form data")
+        raise HTTPException(
+            status_code=422, detail="Missing required form data")
 
     try:
-        questions = json.loads(base64.b64decode(encoded_questions).decode('utf-8'))
+        questions = json.loads(base64.b64decode(
+            encoded_questions).decode('utf-8'))
         current_question = questions[int(question_index)]
         is_correct = answer == current_question["correct_answer"]
         next_question_index = int(question_index) + 1
@@ -1364,7 +1380,7 @@ async def submit_quiz(request: Request, quiz_id: str, question_index: int, answe
             {feedback_html.body.decode()}
         </div>
         """
-        
+
         return HTMLResponse(content=response)
     except Exception as e:
         logger.error(f"Error processing quiz submission: {str(e)}")
@@ -1396,4 +1412,3 @@ async def list_lessons(request: Request):
 @app.get("/quizzes", response_class=HTMLResponse)
 async def list_quizzes(request: Request):
     return templates.TemplateResponse("quizzes.html", {"request": request})
-
