@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, HTTPException, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -25,9 +25,10 @@ from string_algo_quiz_data import string_algo_questions
 import random
 import base64
 import json
-from shared import logger, get_current_user, get_optional_user, oauth2_scheme, init_db, get_user_count, get_total_logins
+from shared import logger, get_current_user, get_optional_user, oauth2_scheme, init_db, get_user_count, get_total_logins, test_db_connection
 from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
+from typing import Optional
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +39,8 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("Testing database connection")
+    test_db_connection()
     logger.info("Initializing database")
     init_db()
     logger.info("Database initialized")
@@ -52,6 +55,15 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_router)
 
 
+@app.get("/profile", response_class=HTMLResponse)
+async def profile(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    if not user:
+        logger.info("User not authenticated, redirecting to login")
+        return RedirectResponse(url="/login")
+    logger.info(f"User accessing profile: {user}")
+    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
+
+
 @app.get("/user-stats")
 async def user_stats():
     user_count = await get_user_count()
@@ -61,11 +73,8 @@ async def user_stats():
 
 
 @app.get("/")
-async def read_home(request: Request, user: dict = Depends(get_optional_user)):
-    if user:
-        return templates.TemplateResponse("home.html", {"request": request, "user": user})
-    else:
-        return templates.TemplateResponse("home.html", {"request": request})
+async def read_home(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("home.html", {"request": request, "user": user})
 
 
 @app.get("/login-modal", response_class=HTMLResponse)
@@ -792,213 +801,203 @@ def bubble_sort(arr):
                 arr[j], arr[j+1] = arr[j+1], arr[j]
 
 # Usage
-arr = [64, 34, 25, 12, 22, 11, 90]
-bubble_sort(arr)
 ```
         }
     }
 
-    return lessons.get(lesson_id)
-print(arr)  # Output: [11, 12, 22, 25, 34, 64, 90]
-            """
-        },
-        11: {
-            "title": "Searching Algorithms",
-            "description": "Searching algorithms are used to find a specific element or value within a data structure. The goal is to locate the target element as efficiently as possible.",
-            "key_points": [
-                "Searching algorithms find a specific element or value within a data structure.",
-                "Common searching algorithms include Linear Search, Binary Search, Depth-First Search (DFS), Breadth-First Search (BFS), and Hash Table Search.",
-                "The efficiency of searching algorithms is measured by their time complexity.",
-                "Linear Search is suitable for unsorted arrays or lists.",
-                "Binary Search is suitable for sorted arrays or lists."
-            ],
-            "operations": [
-                {"name": "Linear Search", "time_complexity":
-                    "O(n)", "description": "Sequentially checking each element in the data structure."},
-                {"name": "Binary Search", "time_complexity":
-                    "O(log n)", "description": "Dividing the search space in half at each step."},
-                {"name": "Depth-First Search (DFS)", "time_complexity": "O(V + E)",
-                 "description": "Exploring as far as possible along each branch before backtracking."},
-                {"name": "Breadth-First Search (BFS)", "time_complexity": "O(V + E)",
-                 "description": "Exploring all neighbors at the current depth before moving to the next depth."},
-                {"name": "Hash Table Search", "time_complexity": "O(1) average, O(n) worst case",
-                 "description": "Using a hash function to compute an index and directly accessing the element."}
-            ],
-            "use_cases": [
-                "Finding a specific element in a collection",
-                "Implementing data structures like sets and dictionaries",
-                "Database querying and indexing",
-                "Network routing and pathfinding",
-                "Cryptography and encryption algorithms"
-            ],
-            "code_example": """
-# Python example of Binary Search
+    return lessons[lesson_id]
 
-def binary_search(arr, target):
-    low = 0
-    high = len(arr) - 1
-    while low <= high:
-        mid = (low + high) // 2
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            low = mid + 1
-        else:
-            high = mid - 1
-    return -1
 
-# Usage
-arr = [11, 12, 22, 25, 34, 64, 90]
-target = 22
-result = binary_search(arr, target)
-if result != -1:
-    print(f"Element found at index {result}")
-else:
-    print("Element not found")
-            """
-        },
-        12: {
-            "title": "Dynamic Programming",
-            "description": "Dynamic programming is an algorithmic technique that solves optimization problems by breaking them down into simpler subproblems and solving each subproblem only once.",
-            "key_points": [
-                "Dynamic programming solves optimization problems by breaking them down into simpler subproblems.",
-                "It uses a bottom-up approach, solving simpler subproblems first and using their solutions to solve larger subproblems.",
-                "Common dynamic programming problems include the Knapsack Problem, Longest Common Subsequence, and Shortest Path.",
-                "Dynamic programming can be implemented using tabulation (bottom-up) or memoization (top-down).",
-                "It often involves trade-offs between time and space complexity."
-            ],
-            "operations": [
-                {"name": "Tabulation", "time_complexity": "O(n^2) to O(n^3)",
-                 "description": "Building a table of solutions for subproblems and using those solutions to solve larger subproblems."},
-                {"name": "Memoization", "time_complexity": "O(n^2) to O(n^3)",
-                 "description": "Storing the solutions to subproblems in a cache and using those solutions to solve larger subproblems."},
-                {"name": "Optimization", "time_complexity": "O(n^2) to O(n^3)",
-                 "description": "Finding the optimal solution to a problem by considering all possible combinations of subproblems."}
-            ],
-            "use_cases": [
-                "Optimizing resource allocation and scheduling",
-                "Solving complex mathematical and scientific problems",
-                "Implementing algorithms for machine learning and artificial intelligence",
-                "Solving optimization problems in business and finance",
-                "Solving combinatorial problems in computer science"
-            ],
-            "code_example": """
-# Python example of Dynamic Programming (Fibonacci sequence)
+@app.get("/lessons", response_class=HTMLResponse)
+async def list_lessons(request: Request):
+    return templates.TemplateResponse("lessons.html", {"request": request})
 
-def fibonacci(n, memo={}):
-    if n <= 1:
-        return n
-    if n not in memo:
-        memo[n] = fibonacci(n-1, memo) + fibonacci(n-2, memo)
-    return memo[n]
 
-# Usage
-n = 10
-print(fibonacci(n))  # Output: 55
-            """
-        },
-        13: {
-            "title": "Greedy Algorithms",
-            "description": "Greedy algorithms are a class of algorithms that make the locally optimal choice at each step with the hope of finding a global optimum.",
-            "key_points": [
-                "Greedy algorithms make the locally optimal choice at each step.",
-                "They do not necessarily guarantee the global optimum, but often provide a good approximation.",
-                "Common greedy algorithms include Dijkstra's Algorithm, Kruskal's Algorithm, and the Huffman Coding Algorithm.",
-                "Greedy algorithms are often used for optimization problems and have a simple and efficient implementation.",
-                "They are suitable for problems where the optimal solution can be built incrementally."
-            ],
-            "operations": [
-                {"name": "Dijkstra's Algorithm", "time_complexity":
-                    "O(E log V)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph."},
-                {"name": "Kruskal's Algorithm", "time_complexity":
-                    "O(E log E)", "description": "Finding the minimum spanning tree of a connected, undirected graph."},
-                {"name": "Huffman Coding", "time_complexity":
-                    "O(n log n)", "description": "Building an optimal prefix code for a given set of characters and their frequencies."}
-            ],
-            "use_cases": [
-                "Solving optimization problems in computer networks and telecommunications",
-                "Implementing routing algorithms in computer networks",
-                "Data compression and encoding algorithms",
-                "Scheduling and resource allocation problems",
-                "Approximating solutions to NP-hard problems"
-            ],
-            "code_example": """
-# Python example of Greedy Algorithm (Dijkstra's Algorithm)
+@app.get("/quiz/{quiz_id}", response_class=HTMLResponse)
+async def quiz(request: Request, quiz_id: int):
+    quiz_data = {
+        1: array_quiz,
+        2: linked_list_quiz,
+        3: stack_quiz,
+        4: queue_quiz,
+        5: hash_table_quiz,
+        6: tree_quiz,
+        7: graph_quiz,
+        8: heap_quiz,
+        9: trie_quiz,
+        10: sorting_algo_questions,
+        11: searching_algo_questions,
+        12: dynamic_programming_questions,
+        13: greedy_algo_questions,
+        14: divide_and_conquer_questions,
+        15: backtracking_questions,
+        16: graph_algo_questions,
+        17: recursive_algo_questions,
+        18: string_algo_questions
+    }
 
-import heapq
+    if quiz_id in quiz_data:
+        quiz = quiz_data[quiz_id]
+        random.shuffle(quiz["questions"])
+        return templates.TemplateResponse("quiz.html", {"request": request, "quiz": quiz})
+    else:
+        raise HTTPException(status_code=404, detail="Quiz not found")
 
-def dijkstra(graph, start):
-    distances = {vertex: float('infinity') for vertex in graph}
-    distances[start] = 0
-    priority_queue = [(0, start)]
-    while priority_queue:
-        current_distance, current_vertex = heapq.heappop(priority_queue)
-        if current_distance > distances[current_vertex]:
-            continue
-        for neighbor, weight in graph[current_vertex].items():
-            distance = current_distance + weight
-            if distance < distances[neighbor]:
-                distances[neighbor] = distance
-                heapq.heappush(priority_queue, (distance, neighbor))
-    return distances
 
-# Usage
-graph = {
-    'A': {'B': 1, 'C': 4},
-    'B': {'A': 1, 'C': 2, 'D': 5},
-    'C': {'A': 4, 'B': 2, 'D': 1},
-    'D': {'B': 5, 'C': 1}
-}
-start_vertex = 'A'
-print(dijkstra(graph, start_vertex))  # Output: {'A': 0, 'B': 1, 'C': 3, 'D': 4}
-            """
-        },
-        14: {
-            "title": "Divide and Conquer",
-            "description": "Divide and Conquer is an algorithmic technique that involves breaking a problem into smaller subproblems, solving them independently, and combining their solutions to solve the original problem.",
-            "key_points": [
-                "Divide and Conquer breaks a problem into smaller subproblems.",
-                "It solves each subproblem independently and combines their solutions.",
-                "Common divide and conquer algorithms include Binary Search, Merge Sort, Quick Sort, and the Fast Fourier Transform (FFT).",
-                "Divide and Conquer often has a recursive implementation.",
-                "It is suitable for problems that can be divided into independent subproblems."
-            ],
-            "operations": [
-                {"name": "Binary Search", "time_complexity":
-                    "O(log n)", "description": "Finding a specific element in a sorted array by repeatedly dividing the search space in half."},
-                {"name": "Merge Sort", "time_complexity":
-                    "O(n log n)", "description": "Sorting an array by dividing it into two halves, sorting them recursively, and merging them."},
-                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case",
-                 "description": "Sorting an array by selecting a 'pivot' element and partitioning the array around it."},
-                {"name": "Fast Fourier Transform (FFT)", "time_complexity": "O(n log n)",
-                 "description": "Computing the Discrete Fourier Transform (DFT) of a sequence of complex numbers."}
-            ],
-            "use_cases": [
-                "Solving mathematical and scientific problems",
-                "Implementing efficient sorting and searching algorithms",
-                "Solving optimization problems in computer networks and telecommunications",
-                "Implementing algorithms for machine learning and artificial intelligence",
-                "Solving combinatorial problems in computer science"
-            ],
-            "code_example": """
-# Python example of Divide and Conquer (Merge Sort)
+@app.post("/submit-quiz")
+async def submit_quiz(request: Request, answers: dict = Form(...)):
+    quiz_id = int(answers.pop("quiz_id"))
+    quiz_data = {
+        1: array_quiz,
+        2: linked_list_quiz,
+        3: stack_quiz,
+        4: queue_quiz,
+        5: hash_table_quiz,
+        6: tree_quiz,
+        7: graph_quiz,
+        8: heap_quiz,
+        9: trie_quiz,
+        10: sorting_algo_questions,
+        11: searching_algo_questions,
+        12: dynamic_programming_questions,
+        13: greedy_algo_questions,
+        14: divide_and_conquer_questions,
+        15: backtracking_questions,
+        16: graph_algo_questions,
+        17: recursive_algo_questions,
+        18: string_algo_questions
+    }
 
-def merge_sort(arr):
-    if len(arr) <= 1:
-        return arr
-    mid = len(arr) // 2
-    left_half = merge_sort(arr[:mid])
-    right_half = merge_sort(arr[mid:])
-    return merge(left_half, right_half)
+    if quiz_id in quiz_data:
+        quiz = quiz_data[quiz_id]
+        correct_answers = {q["id"]: q["correct_answer"] for q in quiz["questions"]}
+        score = sum(correct_answers[int(q_id)] == answers[q_id] for q_id in answers)
+        return templates.TemplateResponse("quiz_results.html", {"request": request, "score": score, "total": len(quiz["questions"])})
+    else:
+        raise HTTPException(status_code=404, detail="Quiz not found")
 
-def merge(left, right):
-    merged = []
-    i = j = 0
-    while i < len(left) and j < len(right):
-        if left[i] < right[j]:
-            merged.append(left[i])
-            i += 1
-        else:
+
+@app.get("/quizzes", response_class=HTMLResponse)
+async def quizzes(request: Request):
+    return templates.TemplateResponse("quizzes.html", {"request": request})
+
+
+@app.get("/algorithms", response_class=HTMLResponse)
+async def algorithms(request: Request):
+    return templates.TemplateResponse("algorithms.html", {"request": request})
+
+
+@app.get("/data-structures", response_class=HTMLResponse)
+async def data_structures(request: Request):
+    return templates.TemplateResponse("data_structures.html", {"request": request})
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def about(request: Request):
+    return templates.TemplateResponse("about.html", {"request": request})
+
+
+@app.get("/contact", response_class=HTMLResponse)
+async def contact(request: Request):
+    return templates.TemplateResponse("contact.html", {"request": request})
+
+
+@app.get("/resources", response_class=HTMLResponse)
+async def resources(request: Request):
+    return templates.TemplateResponse("resources.html", {"request": request})
+
+
+@app.get("/faq", response_class=HTMLResponse)
+async def faq(request: Request):
+    return templates.TemplateResponse("faq.html", {"request": request})
+
+
+@app.get("/privacy-policy", response_class=HTMLResponse)
+async def privacy_policy(request: Request):
+    return templates.TemplateResponse("privacy_policy.html", {"request": request})
+
+
+@app.get("/terms-of-service", response_class=HTMLResponse)
+async def terms_of_service(request: Request):
+    return templates.TemplateResponse("terms_of_service.html", {"request": request})
+
+
+@app.get("/cookie-policy", response_class=HTMLResponse)
+async def cookie_policy(request: Request):
+    return templates.TemplateResponse("cookie_policy.html", {"request": request})
+
+
+@app.get("/accessibility-statement", response_class=HTMLResponse)
+async def accessibility_statement(request: Request):
+    return templates.TemplateResponse("accessibility_statement.html", {"request": request})
+
+
+@app.get("/sitemap", response_class=HTMLResponse)
+async def sitemap(request: Request):
+    return templates.TemplateResponse("sitemap.html", {"request": request})
+
+
+@app.get("/robots.txt")
+async def robots_txt():
+    return "User-agent: *\nDisallow: /"
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    return RedirectResponse(url="/static/favicon.ico")
+
+
+@app.get("/ads.txt")
+async def ads_txt():
+    return "google.com, pub-1234567890, DIRECT, f08c47fec0942fa0"
+
+
+@app.get("/manifest.json")
+async def manifest():
+    return {
+        "name": "LearnDSA",
+        "short_name": "LearnDSA",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#000000",
+        "icons": [
+            {
+                "src": "/static/favicon.ico",
+                "sizes": "192x192",
+                "type": "image/png"
+            }
+        ]
+    }
+
+
+@app.get("/service-worker.js")
+async def service_worker():
+    return FileResponse("static/service-worker.js", media_type="application/javascript")
+
+
+@app.get("/offline.html")
+async def offline():
+    return FileResponse("static/offline.html")
+
+
+@app.get("/api/data")
+async def get_data():
+    data = {"message": "Hello, World!"}
+    return data
+
+
+@app.post("/api/data")
+async def post_data(data: dict):
+    return {"received": data}
+
+
+@app.get("/api/items/{item_id}")
+async def read_item(item_id: int, q: str = None):
+    return {"item_id": item_id, "q": q}
+
+
+@app.get("/api/users/{user_id}")
             merged.append(right[j])
             j += 1
     merged.extend(left[i:])

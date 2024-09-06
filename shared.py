@@ -6,6 +6,9 @@ import logging
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from contextlib import contextmanager
+import jwt
+from jwt import ExpiredSignatureError, PyJWTError  # Update this line
+from fastapi import Request  # Add this import
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,6 +20,7 @@ ALGORITHM = "HS256"
 load_dotenv()
 
 DATABASE_URL = os.getenv('DATABASE_URL')
+
 
 @contextmanager
 def get_db():
@@ -75,9 +79,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     if not token:
         logger.error("No token provided")
         raise credentials_exception
+    logger.info(f"Token received: {token}")  # Add this line for debugging
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("email")
+        email: str = payload.get("sub")  # Changed from "email" to "sub"
         if email is None:
             logger.error("Email claim is missing in the token")
             raise credentials_exception
@@ -85,24 +90,39 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         return {"email": email, "name": payload.get("name")}
     except ExpiredSignatureError:
         logger.error("Token has expired")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
-    except JWTError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+    except PyJWTError as e:  # Update this line
         logger.error(f"JWT error: {e}")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-async def get_optional_user(token: str = Depends(oauth2_scheme)):
+
+async def get_optional_user(request: Request):
+    token = request.cookies.get("access_token")
+    if token and token.startswith("Bearer "):
+        token = token[7:]  # Remove 'Bearer ' prefix
     if token:
         try:
             payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
-            email: str = payload.get("email")
+            email: str = payload.get("sub")
             if email is None:
                 logger.error("Email claim is missing in the token")
                 return None
             return {"email": email, "name": payload.get("name")}
         except ExpiredSignatureError:
             logger.error("Token has expired")
-            return None
-        except JWTError as e:
+        except PyJWTError as e:
             logger.error(f"JWT error: {e}")
-            return None
     return None
+
+
+def test_db_connection():
+    try:
+        with get_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+        logger.info("Database connection successful")
+    except Exception as e:
+        logger.error(f"Database connection failed: {e}")
+        raise
