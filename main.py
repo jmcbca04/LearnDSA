@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, HTTPException, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -25,9 +25,10 @@ from string_algo_quiz_data import string_algo_questions
 import random
 import base64
 import json
-from shared import logger, get_current_user, get_optional_user, oauth2_scheme, init_db, get_user_count, get_total_logins
+from shared import logger, get_optional_user, get_current_user, get_user_count, get_total_logins, test_db_connection, init_db
 from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
+from typing import Optional
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +39,8 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("Testing database connection")
+    test_db_connection()
     logger.info("Initializing database")
     init_db()
     logger.info("Database initialized")
@@ -52,6 +55,15 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_router)
 
 
+@app.get("/profile", response_class=HTMLResponse)
+async def profile(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    if not user:
+        logger.info("User not authenticated, redirecting to login")
+        return RedirectResponse(url="/login")
+    logger.info(f"User accessing profile: {user}")
+    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
+
+
 @app.get("/user-stats")
 async def user_stats():
     user_count = await get_user_count()
@@ -60,12 +72,9 @@ async def user_stats():
     return {"total_users": user_count, "total_logins": total_logins}
 
 
-@app.get("/")
-async def read_home(request: Request, user: dict = Depends(get_optional_user)):
-    if user:
-        return templates.TemplateResponse("home.html", {"request": request, "user": user})
-    else:
-        return templates.TemplateResponse("home.html", {"request": request})
+@app.get("/", response_class=HTMLResponse)
+async def read_home(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("home.html", {"request": request, "user": user})
 
 
 @app.get("/login-modal", response_class=HTMLResponse)
@@ -79,7 +88,7 @@ async def protected_route(user: dict = Depends(get_current_user)):
 
 
 @app.get("/lesson/{lesson_id}", response_class=HTMLResponse)
-async def read_lesson(request: Request, lesson_id: int):
+async def read_lesson(request: Request, lesson_id: int, user: Optional[dict] = Depends(get_optional_user)):
     lessons = {
         1: {
             "title": "Arrays",
@@ -91,14 +100,10 @@ async def read_lesson(request: Request, lesson_id: int):
                 "Dynamic arrays (like Python lists) can grow or shrink in size."
             ],
             "operations": [
-                {"name": "Access", "time_complexity":
-                    "O(1)", "description": "Retrieve an element at a given index."},
-                {"name": "Search", "time_complexity":
-                    "O(n)", "description": "Find a specific element in the array."},
-                {"name": "Insert", "time_complexity":
-                    "O(n)", "description": "Add an element at a specific position."},
-                {"name": "Delete", "time_complexity":
-                    "O(n)", "description": "Remove an element from a specific position."}
+                {"name": "Access", "time_complexity": "O(1)", "description": "Retrieve an element at a given index."},
+                {"name": "Search", "time_complexity": "O(n)", "description": "Find a specific element in the array."},
+                {"name": "Insert", "time_complexity": "O(n)", "description": "Add an element at a specific position."},
+                {"name": "Delete", "time_complexity": "O(n)", "description": "Remove an element from a specific position."}
             ],
             "use_cases": [
                 "Storing and accessing sequential data",
@@ -140,14 +145,10 @@ print(numbers)  # Output: [1, 10, 3, 4, 5, 6]
                 "Unlike arrays, Linked Lists do not require contiguous memory allocation."
             ],
             "operations": [
-                {"name": "Access", "time_complexity":
-                    "O(n)", "description": "Traverse the list to reach a specific element."},
-                {"name": "Search", "time_complexity":
-                    "O(n)", "description": "Traverse the list to find a specific element."},
-                {"name": "Insert", "time_complexity": "O(1) or O(n)",
-                 "description": "O(1) at the beginning, O(n) if inserting at a specific position."},
-                {"name": "Delete", "time_complexity": "O(1) or O(n)",
-                 "description": "O(1) at the beginning, O(n) if deleting from a specific position."}
+                {"name": "Access", "time_complexity": "O(n)", "description": "Traverse the list to reach a specific element."},
+                {"name": "Search", "time_complexity": "O(n)", "description": "Traverse the list to find a specific element."},
+                {"name": "Insert", "time_complexity": "O(1) or O(n)", "description": "O(1) at the beginning, O(n) if inserting at a specific position."},
+                {"name": "Delete", "time_complexity": "O(1) or O(n)", "description": "O(1) at the beginning, O(n) if deleting from a specific position."}
             ],
             "use_cases": [
                 "Implementing other data structures like stacks, queues, and hash tables",
@@ -205,14 +206,10 @@ print(ll.display())  # Output: [1, 2, 3]
                 "Stacks have a limited access pattern - only the top element can be accessed directly."
             ],
             "operations": [
-                {"name": "Push", "time_complexity":
-                    "O(1)", "description": "Add an element to the top of the stack."},
-                {"name": "Pop", "time_complexity":
-                    "O(1)", "description": "Remove and return the top element from the stack."},
-                {"name": "Peek/Top", "time_complexity":
-                    "O(1)", "description": "Return the top element without removing it."},
-                {"name": "IsEmpty",
-                    "time_complexity": "O(1)", "description": "Check if the stack is empty."}
+                {"name": "Push", "time_complexity": "O(1)", "description": "Add an element to the top of the stack."},
+                {"name": "Pop", "time_complexity": "O(1)", "description": "Remove and return the top element from the stack."},
+                {"name": "Peek/Top", "time_complexity": "O(1)", "description": "Return the top element without removing it."},
+                {"name": "IsEmpty", "time_complexity": "O(1)", "description": "Check if the stack is empty."}
             ],
             "use_cases": [
                 "Function call management (call stack) in programming languages",
@@ -269,16 +266,11 @@ print(stack.is_empty())  # Output: False
                 "Variations include circular queues, double-ended queues (deques), and priority queues."
             ],
             "operations": [
-                {"name": "Enqueue", "time_complexity":
-                    "O(1)", "description": "Add an element to the rear of the queue."},
-                {"name": "Dequeue", "time_complexity":
-                    "O(1)", "description": "Remove and return the front element from the queue."},
-                {"name": "Front", "time_complexity":
-                    "O(1)", "description": "Return the front element without removing it."},
-                {"name": "IsEmpty",
-                    "time_complexity": "O(1)", "description": "Check if the queue is empty."},
-                {"name": "Size", "time_complexity":
-                    "O(1)", "description": "Return the number of elements in the queue."}
+                {"name": "Enqueue", "time_complexity": "O(1)", "description": "Add an element to the rear of the queue."},
+                {"name": "Dequeue", "time_complexity": "O(1)", "description": "Remove and return the front element from the queue."},
+                {"name": "Front", "time_complexity": "O(1)", "description": "Return the front element without removing it."},
+                {"name": "IsEmpty", "time_complexity": "O(1)", "description": "Check if the queue is empty."},
+                {"name": "Size", "time_complexity": "O(1)", "description": "Return the number of elements in the queue."}
             ],
             "use_cases": [
                 "Task scheduling in operating systems",
@@ -335,14 +327,10 @@ print(queue.is_empty()) # Output: False
                 "Load factor (number of entries / number of buckets) affects performance and needs to be balanced."
             ],
             "operations": [
-                {"name": "Insert", "time_complexity": "O(1) average",
-                 "description": "Add a key-value pair to the hash table."},
-                {"name": "Delete", "time_complexity": "O(1) average",
-                 "description": "Remove a key-value pair from the hash table."},
-                {"name": "Lookup", "time_complexity": "O(1) average",
-                 "description": "Retrieve the value associated with a given key."},
-                {"name": "Resize", "time_complexity":
-                    "O(n)", "description": "Increase or decrease the size of the hash table and rehash all entries."}
+                {"name": "Insert", "time_complexity": "O(1) average", "description": "Add a key-value pair to the hash table."},
+                {"name": "Delete", "time_complexity": "O(1) average", "description": "Remove a key-value pair from the hash table."},
+                {"name": "Lookup", "time_complexity": "O(1) average", "description": "Retrieve the value associated with a given key."},
+                {"name": "Resize", "time_complexity": "O(n)", "description": "Increase or decrease the size of the hash table and rehash all entries."}
             ],
             "use_cases": [
                 "Implementing associative arrays (dictionaries in Python, objects in JavaScript)",
@@ -409,14 +397,10 @@ except KeyError:
                 "Trees are used to represent hierarchical relationships and for efficient searching and sorting."
             ],
             "operations": [
-                {"name": "Insert", "time_complexity": "O(log n) for balanced trees",
-                 "description": "Add a new node to the tree."},
-                {"name": "Delete", "time_complexity": "O(log n) for balanced trees",
-                 "description": "Remove a node from the tree."},
-                {"name": "Search", "time_complexity": "O(log n) for balanced trees",
-                 "description": "Find a specific node in the tree."},
-                {"name": "Traversal", "time_complexity":
-                    "O(n)", "description": "Visit all nodes in the tree (e.g., in-order, pre-order, post-order)."}
+                {"name": "Insert", "time_complexity": "O(log n) for balanced trees", "description": "Add a new node to the tree."},
+                {"name": "Delete", "time_complexity": "O(log n) for balanced trees", "description": "Remove a node from the tree."},
+                {"name": "Search", "time_complexity": "O(log n) for balanced trees", "description": "Find a specific node in the tree."},
+                {"name": "Traversal", "time_complexity": "O(n)", "description": "Visit all nodes in the tree (e.g., in-order, pre-order, post-order)."}
             ],
             "use_cases": [
                 "File systems in operating systems",
@@ -441,14 +425,14 @@ class BinarySearchTree:
     def insert(self, value):
         if not self.root:
             self.root = Node(value)
-    else:
+        else:
             self._insert_recursive(self.root, value)
 
     def _insert_recursive(self, node, value):
         if value < node.value:
             if node.left is None:
                 node.left = Node(value)
-        else:
+            else:
                 self._insert_recursive(node.left, value)
         else:
             if node.right is None:
@@ -502,18 +486,12 @@ print(bst.search(10))  # Output: None
                 "Special types include trees, DAGs (Directed Acyclic Graphs), and bipartite graphs."
             ],
             "operations": [
-                {"name": "Add Vertex",
-                    "time_complexity": "O(1)", "description": "Add a new vertex to the graph."},
-                {"name": "Add Edge", "time_complexity":
-                    "O(1)", "description": "Add a new edge between two vertices."},
-                {"name": "Remove Vertex", "time_complexity":
-                    "O(|V| + |E|)", "description": "Remove a vertex and all its incident edges."},
-                {"name": "Remove Edge", "time_complexity":
-                    "O(1)", "description": "Remove an edge between two vertices."},
-                {"name": "DFS Traversal", "time_complexity":
-                    "O(|V| + |E|)", "description": "Depth-First Search traversal of the graph."},
-                {"name": "BFS Traversal", "time_complexity":
-                    "O(|V| + |E|)", "description": "Breadth-First Search traversal of the graph."}
+                {"name": "Add Vertex", "time_complexity": "O(1)", "description": "Add a new vertex to the graph."},
+                {"name": "Add Edge", "time_complexity": "O(1)", "description": "Add a new edge between two vertices."},
+                {"name": "Remove Vertex", "time_complexity": "O(|V| + |E|)", "description": "Remove a vertex and all its incident edges."},
+                {"name": "Remove Edge", "time_complexity": "O(1)", "description": "Remove an edge between two vertices."},
+                {"name": "DFS Traversal", "time_complexity": "O(|V| + |E|)", "description": "Depth-First Search traversal of the graph."},
+                {"name": "BFS Traversal", "time_complexity": "O(|V| + |E|)", "description": "Breadth-First Search traversal of the graph."}
             ],
             "use_cases": [
                 "Social networks (friends connections)",
@@ -539,7 +517,7 @@ class Graph:
             self.add_vertex(vertex1)
         if vertex2 not in self.graph:
             self.add_vertex(vertex2)
-            self.graph[vertex1].append(vertex2)
+        self.graph[vertex1].append(vertex2)
         self.graph[vertex2].append(vertex1)  # For undirected graph
 
     def remove_edge(self, vertex1, vertex2):
@@ -598,14 +576,10 @@ g.bfs(0)
                 "Common operations include insertion, deletion, and extracting the maximum/minimum element."
             ],
             "operations": [
-                {"name": "Insert",
-                    "time_complexity": "O(log n)", "description": "Add a new element to the heap."},
-                {"name": "Delete", "time_complexity":
-                    "O(log n)", "description": "Remove an element from the heap."},
-                {"name": "Extract Max/Min", "time_complexity":
-                    "O(log n)", "description": "Remove and return the maximum/minimum element from the heap."},
-                {"name": "Heapify", "time_complexity":
-                    "O(log n)", "description": "Restore the heap property after insertion or deletion."}
+                {"name": "Insert", "time_complexity": "O(log n)", "description": "Add a new element to the heap."},
+                {"name": "Delete", "time_complexity": "O(log n)", "description": "Remove an element from the heap."},
+                {"name": "Extract Max/Min", "time_complexity": "O(log n)", "description": "Remove and return the maximum/minimum element from the heap."},
+                {"name": "Heapify", "time_complexity": "O(log n)", "description": "Restore the heap property after insertion or deletion."}
             ],
             "use_cases": [
                 "Implementing priority queues",
@@ -621,36 +595,44 @@ class MaxHeap:
     def __init__(self):
         self.heap = []
 
+    def parent(self, i):
+        return (i - 1) // 2
+
+    def left_child(self, i):
+        return 2 * i + 1
+
+    def right_child(self, i):
+        return 2 * i + 2
+
     def insert(self, value):
         self.heap.append(value)
         self._heapify_up(len(self.heap) - 1)
+
+    def _heapify_up(self, i):
+        parent = self.parent(i)
+        if i > 0 and self.heap[i] > self.heap[parent]:
+            self.heap[i], self.heap[parent] = self.heap[parent], self.heap[i]
+            self._heapify_up(parent)
 
     def extract_max(self):
         if not self.heap:
             return None
         max_value = self.heap[0]
-        last_value = self.heap.pop()
-        if self.heap:
-            self.heap[0] = last_value
-            self._heapify_down(0)
+        self.heap[0] = self.heap[-1]
+        self.heap.pop()
+        self._heapify_down(0)
         return max_value
 
-    def _heapify_up(self, index):
-        parent_index = (index - 1) // 2
-        if index > 0 and self.heap[parent_index] < self.heap[index]:
-            self.heap[parent_index], self.heap[index] = self.heap[index], self.heap[parent_index]
-            self._heapify_up(parent_index)
-
-    def _heapify_down(self, index):
-        left_child_index = 2 * index + 1
-        right_child_index = 2 * index + 2
-        largest = index
-        if left_child_index < len(self.heap) and self.heap[left_child_index] > self.heap[largest]:
-            largest = left_child_index
-        if right_child_index < len(self.heap) and self.heap[right_child_index] > self.heap[largest]:
-            largest = right_child_index
-        if largest != index:
-            self.heap[index], self.heap[largest] = self.heap[largest], self.heap[index]
+    def _heapify_down(self, i):
+        left = self.left_child(i)
+        right = self.right_child(i)
+        largest = i
+        if left < len(self.heap) and self.heap[left] > self.heap[largest]:
+            largest = left
+        if right < len(self.heap) and self.heap[right] > self.heap[largest]:
+            largest = right
+        if largest != i:
+            self.heap[i], self.heap[largest] = self.heap[largest], self.heap[i]
             self._heapify_down(largest)
 
 # Usage
@@ -663,34 +645,31 @@ max_heap.insert(9)
 
 print(max_heap.extract_max())  # Output: 9
 print(max_heap.extract_max())  # Output: 7
+print(max_heap.extract_max())  # Output: 5
             """
         },
         9: {
-            "title": "Tries (Prefix Trees)",
-            "description": "A tree-like data structure that stores a dynamic set or associative array where the keys are usually strings. Tries are used to efficiently search for words in a dictionary, provide autocomplete suggestions, and implement routing algorithms.",
+            "title": "Tries",
+            "description": "A tree-like data structure that stores a dynamic set or associative array where the keys are usually strings. Tries are used to efficiently search for a key in a collection of strings.",
             "key_points": [
-                "Tries are tree-like data structures that store strings.",
+                "Tries are used for efficient string searching and retrieval.",
                 "Each node in a trie represents a character in a string.",
                 "The root node represents an empty string.",
-                "Tries are used for efficient string searching and autocomplete suggestions.",
-                "Common operations include insertion, deletion, and searching for a string."
+                "Tries are used in applications like autocomplete suggestions, spell checkers, and routing algorithms.",
+                "Tries can be implemented using arrays or linked lists."
             ],
             "operations": [
-                {"name": "Insert", "time_complexity":
-                    "O(m)", "description": "Add a new string to the trie, where m is the length of the string."},
-                {"name": "Delete", "time_complexity":
-                    "O(m)", "description": "Remove a string from the trie, where m is the length of the string."},
-                {"name": "Search", "time_complexity":
-                    "O(m)", "description": "Check if a string is in the trie, where m is the length of the string."},
-                {"name": "Autocomplete", "time_complexity":
-                    "O(m)", "description": "Find all strings in the trie that start with a given prefix."}
+                {"name": "Insert", "time_complexity": "O(m)", "description": "Add a new string to the trie, where m is the length of the string."},
+                {"name": "Search", "time_complexity": "O(m)", "description": "Check if a string is present in the trie."},
+                {"name": "Delete", "time_complexity": "O(m)", "description": "Remove a string from the trie."},
+                {"name": "Prefix Search", "time_complexity": "O(m)", "description": "Find all strings in the trie that have a given prefix."}
             ],
             "use_cases": [
-                "Implementing dictionaries and autocomplete suggestions",
-                "Routing algorithms in routers and network devices",
-                "Spell checkers and word processors",
-                "Implementing T9 (predictive text) on mobile phones",
-                "Search engines and indexing"
+                "Implementing autocomplete suggestions",
+                "Spell checking in text editors",
+                "Routing algorithms in routers",
+                "Implementing dictionaries and word suggestions",
+                "Solving word games like Scrabble"
             ],
             "code_example": """
 # Python example of a trie implementation
@@ -720,69 +699,53 @@ class Trie:
             node = node.children[char]
         return node.is_end_of_word
 
-    def autocomplete(self, prefix):
+    def starts_with(self, prefix):
         node = self.root
         for char in prefix:
             if char not in node.children:
-                return []
+                return False
             node = node.children[char]
-        return self._get_words(node, prefix)
-
-    def _get_words(self, node, prefix):
-        words = []
-        if node.is_end_of_word:
-            words.append(prefix)
-        for char, child_node in node.children.items():
-            words.extend(self._get_words(child_node, prefix + char))
-        return words
+        return True
 
 # Usage
 trie = Trie()
 trie.insert("apple")
-trie.insert("banana")
 trie.insert("app")
+trie.insert("banana")
 
 print(trie.search("apple"))  # Output: True
+print(trie.search("app"))    # Output: True
 print(trie.search("ban"))    # Output: False
-print(trie.autocomplete("app"))  # Output: ['app', 'apple']
+print(trie.starts_with("app"))  # Output: True
             """
         },
-        # Algorithms
         10: {
             "title": "Sorting Algorithms",
-            "description": "Sorting algorithms are used to rearrange a given set of data elements in a particular order. The order can be numerical or lexicographical.",
+            "description": "Sorting algorithms are used to rearrange a given array or list of elements into a certain order. The order can be numerical order (ascending or descending), lexicographical order, or based on custom criteria.",
             "key_points": [
-                "Sorting algorithms arrange data elements in a specific order.",
-                "Common sorting algorithms include Bubble Sort, Selection Sort, Insertion Sort, Merge Sort, Quick Sort, Heap Sort, and Radix Sort.",
-                "The efficiency of sorting algorithms is measured by their time complexity.",
-                "Stable sorting algorithms maintain the relative order of equal elements.",
-                "In-place sorting algorithms use a small amount of additional memory."
+                "Sorting algorithms are used to arrange data in a specific order.",
+                "Common sorting algorithms include bubble sort, selection sort, insertion sort, merge sort, quick sort, heap sort, and radix sort.",
+                "Sorting algorithms have different time complexities for best, average, and worst cases.",
+                "The choice of sorting algorithm depends on the size of the data, the nature of the data, and the required time complexity."
             ],
             "operations": [
-                {"name": "Bubble Sort", "time_complexity":
-                    "O(n^2)", "description": "Repeatedly swapping adjacent elements if they are in the wrong order."},
-                {"name": "Selection Sort", "time_complexity":
-                    "O(n^2)", "description": "Selecting the smallest (or largest) element and swapping it with the first unsorted element."},
-                {"name": "Insertion Sort", "time_complexity":
-                    "O(n^2)", "description": "Inserting each element into its correct position in the sorted portion of the array."},
-                {"name": "Merge Sort", "time_complexity":
-                    "O(n log n)", "description": "Dividing the array into two halves, sorting them recursively, and merging them."},
-                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case",
-                 "description": "Selecting a 'pivot' element and partitioning the array around it."},
-                {"name": "Heap Sort", "time_complexity":
-                    "O(n log n)", "description": "Building a max-heap from the array and repeatedly extracting the maximum element."},
-                {"name": "Radix Sort", "time_complexity":
-                    "O(nk)", "description": "Sorting integers by grouping them by individual digits."}
+                {"name": "Bubble Sort", "time_complexity": "O(n^2)", "description": "Compare adjacent elements and swap them if they are in the wrong order."},
+                {"name": "Selection Sort", "time_complexity": "O(n^2)", "description": "Find the minimum element from the unsorted part and swap it with the first element."},
+                {"name": "Insertion Sort", "time_complexity": "O(n^2)", "description": "Insert each element from the unsorted part into its correct position in the sorted part."},
+                {"name": "Merge Sort", "time_complexity": "O(n log n)", "description": "Divide the array into two halves, sort them recursively, and merge them."},
+                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case", "description": "Choose a pivot element, partition the array around the pivot, and recursively sort the sub-arrays."},
+                {"name": "Heap Sort", "time_complexity": "O(n log n)", "description": "Build a max heap from the array, repeatedly remove the maximum element, and place it at the end."},
+                {"name": "Radix Sort", "time_complexity": "O(nk)", "description": "Sort the elements based on individual digits or characters, starting from the least significant digit/character."}
             ],
             "use_cases": [
                 "Sorting data for display or analysis",
                 "Implementing data structures like priority queues",
-                "Database indexing and query optimization",
-                "Cryptography and encryption algorithms",
-                "Numerical simulations and scientific computing"
+                "Solving problems related to searching and ordering",
+                "Optimizing algorithms for better performance",
+                "Working with large datasets that don't fit in memory"
             ],
             "code_example": """
-# Python example of Bubble Sort
+# Python example of bubble sort implementation
 
 def bubble_sort(arr):
     n = len(arr)
@@ -794,103 +757,77 @@ def bubble_sort(arr):
 # Usage
 arr = [64, 34, 25, 12, 22, 11, 90]
 bubble_sort(arr)
-```
-        }
-    }
-
-    return lessons.get(lesson_id)
 print(arr)  # Output: [11, 12, 22, 25, 34, 64, 90]
             """
         },
         11: {
             "title": "Searching Algorithms",
-            "description": "Searching algorithms are used to find a specific element or value within a data structure. The goal is to locate the target element as efficiently as possible.",
+            "description": "Searching algorithms are used to find a specific element or value in a given data structure. The goal is to locate the target element efficiently and return its index or position.",
             "key_points": [
-                "Searching algorithms find a specific element or value within a data structure.",
-                "Common searching algorithms include Linear Search, Binary Search, Depth-First Search (DFS), Breadth-First Search (BFS), and Hash Table Search.",
-                "The efficiency of searching algorithms is measured by their time complexity.",
-                "Linear Search is suitable for unsorted arrays or lists.",
-                "Binary Search is suitable for sorted arrays or lists."
+                "Searching algorithms are used to find elements in a data structure.",
+                "Common searching algorithms include linear search, binary search, and hash table search.",
+                "Searching algorithms have different time complexities for best, average, and worst cases.",
+                "The choice of searching algorithm depends on the size of the data, the nature of the data, and the required time complexity."
             ],
             "operations": [
-                {"name": "Linear Search", "time_complexity":
-                    "O(n)", "description": "Sequentially checking each element in the data structure."},
-                {"name": "Binary Search", "time_complexity":
-                    "O(log n)", "description": "Dividing the search space in half at each step."},
-                {"name": "Depth-First Search (DFS)", "time_complexity": "O(V + E)",
-                 "description": "Exploring as far as possible along each branch before backtracking."},
-                {"name": "Breadth-First Search (BFS)", "time_complexity": "O(V + E)",
-                 "description": "Exploring all neighbors at the current depth before moving to the next depth."},
-                {"name": "Hash Table Search", "time_complexity": "O(1) average, O(n) worst case",
-                 "description": "Using a hash function to compute an index and directly accessing the element."}
+                {"name": "Linear Search", "time_complexity": "O(n)", "description": "Sequentially search for the target element in the data structure."},
+                {"name": "Binary Search", "time_complexity": "O(log n)", "description": "Divide the sorted data structure into halves and search in the appropriate half."},
+                {"name": "Hash Table Search", "time_complexity": "O(1) average", "description": "Use a hash function to compute the index of the target element in the hash table."}
             ],
             "use_cases": [
-                "Finding a specific element in a collection",
-                "Implementing data structures like sets and dictionaries",
-                "Database querying and indexing",
-                "Network routing and pathfinding",
-                "Cryptography and encryption algorithms"
+                "Searching for elements in a database",
+                "Implementing search functionality in applications",
+                "Solving problems related to searching and retrieval",
+                "Optimizing algorithms for better performance",
+                "Working with large datasets that don't fit in memory"
             ],
             "code_example": """
-# Python example of Binary Search
+# Python example of linear search implementation
 
-def binary_search(arr, target):
-    low = 0
-    high = len(arr) - 1
-    while low <= high:
-        mid = (low + high) // 2
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            low = mid + 1
-        else:
-            high = mid - 1
+def linear_search(arr, target):
+    for i in range(len(arr)):
+        if arr[i] == target:
+            return i
     return -1
 
 # Usage
-arr = [11, 12, 22, 25, 34, 64, 90]
+arr = [64, 34, 25, 12, 22, 11, 90]
 target = 22
-result = binary_search(arr, target)
-if result != -1:
-    print(f"Element found at index {result}")
+index = linear_search(arr, target)
+if index != -1:
+    print(f"Element {target} found at index {index}")
 else:
     print("Element not found")
             """
         },
         12: {
             "title": "Dynamic Programming",
-            "description": "Dynamic programming is an algorithmic technique that solves optimization problems by breaking them down into simpler subproblems and solving each subproblem only once.",
+            "description": "Dynamic programming is an algorithmic technique that solves a complex problem by breaking it down into simpler subproblems and solving each subproblem only once, storing their solutions in a table for future reference.",
             "key_points": [
-                "Dynamic programming solves optimization problems by breaking them down into simpler subproblems.",
-                "It uses a bottom-up approach, solving simpler subproblems first and using their solutions to solve larger subproblems.",
-                "Common dynamic programming problems include the Knapsack Problem, Longest Common Subsequence, and Shortest Path.",
-                "Dynamic programming can be implemented using tabulation (bottom-up) or memoization (top-down).",
-                "It often involves trade-offs between time and space complexity."
+                "Dynamic programming is used to solve optimization problems.",
+                "It involves solving subproblems and combining their solutions to solve the original problem.",
+                "Dynamic programming algorithms have overlapping subproblems and optimal substructure properties.",
+                "The solutions to subproblems are stored in a table to avoid redundant computations."
             ],
             "operations": [
-                {"name": "Tabulation", "time_complexity": "O(n^2) to O(n^3)",
-                 "description": "Building a table of solutions for subproblems and using those solutions to solve larger subproblems."},
-                {"name": "Memoization", "time_complexity": "O(n^2) to O(n^3)",
-                 "description": "Storing the solutions to subproblems in a cache and using those solutions to solve larger subproblems."},
-                {"name": "Optimization", "time_complexity": "O(n^2) to O(n^3)",
-                 "description": "Finding the optimal solution to a problem by considering all possible combinations of subproblems."}
+                {"name": "Tabulation", "time_complexity": "O(n)", "description": "Build a table in bottom-up manner and fill it up in a way that each entry depends on previously computed entries."},
+                {"name": "Memoization", "time_complexity": "O(n)", "description": "Store the results of expensive function calls and return the cached result when the same inputs occur again."}
             ],
             "use_cases": [
-                "Optimizing resource allocation and scheduling",
-                "Solving complex mathematical and scientific problems",
-                "Implementing algorithms for machine learning and artificial intelligence",
-                "Solving optimization problems in business and finance",
-                "Solving combinatorial problems in computer science"
+                "Solving optimization problems like knapsack, longest common subsequence, and shortest path",
+                "Implementing algorithms like Bellman-Ford and Floyd-Warshall for shortest path",
+                "Solving problems related to combinatorics and probability",
+                "Optimizing algorithms for better performance",
+                "Working with large datasets that don't fit in memory"
             ],
             "code_example": """
-# Python example of Dynamic Programming (Fibonacci sequence)
+# Python example of dynamic programming (tabulation) for fibonacci sequence
 
-def fibonacci(n, memo={}):
-    if n <= 1:
-        return n
-    if n not in memo:
-        memo[n] = fibonacci(n-1, memo) + fibonacci(n-2, memo)
-    return memo[n]
+def fibonacci(n):
+    fib = [0, 1] + [0] * (n-1)
+    for i in range(2, n+1):
+        fib[i] = fib[i-1] + fib[i-2]
+    return fib[n]
 
 # Usage
 n = 10
@@ -899,31 +836,27 @@ print(fibonacci(n))  # Output: 55
         },
         13: {
             "title": "Greedy Algorithms",
-            "description": "Greedy algorithms are a class of algorithms that make the locally optimal choice at each step with the hope of finding a global optimum.",
+            "description": "Greedy algorithms are a class of algorithms that make the locally optimal choice at each stage with the hope of finding a global optimum. They are used to solve optimization problems where the optimal solution can be reached by making a series of greedy choices.",
             "key_points": [
-                "Greedy algorithms make the locally optimal choice at each step.",
-                "They do not necessarily guarantee the global optimum, but often provide a good approximation.",
-                "Common greedy algorithms include Dijkstra's Algorithm, Kruskal's Algorithm, and the Huffman Coding Algorithm.",
-                "Greedy algorithms are often used for optimization problems and have a simple and efficient implementation.",
-                "They are suitable for problems where the optimal solution can be built incrementally."
+                "Greedy algorithms make locally optimal choices at each stage.",
+                "They are used to solve optimization problems where a global optimum can be reached by making greedy choices.",
+                "Greedy algorithms may not always produce the optimal solution, but they are efficient and easy to implement.",
+                "Common greedy algorithms include Kruskal's algorithm for minimum spanning tree, Dijkstra's algorithm for shortest path, and Huffman coding."
             ],
             "operations": [
-                {"name": "Dijkstra's Algorithm", "time_complexity":
-                    "O(E log V)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph."},
-                {"name": "Kruskal's Algorithm", "time_complexity":
-                    "O(E log E)", "description": "Finding the minimum spanning tree of a connected, undirected graph."},
-                {"name": "Huffman Coding", "time_complexity":
-                    "O(n log n)", "description": "Building an optimal prefix code for a given set of characters and their frequencies."}
+                {"name": "Kruskal's Algorithm", "time_complexity": "O(E log E)", "description": "Find the minimum spanning tree of a graph by repeatedly adding the smallest weight edge that does not form a cycle."},
+                {"name": "Dijkstra's Algorithm", "time_complexity": "O((V + E) log V)", "description": "Find the shortest path from a source vertex to all other vertices in a weighted graph."},
+                {"name": "Huffman Coding", "time_complexity": "O(n log n)", "description": "Generate a prefix code for a given set of characters based on their frequencies."}
             ],
             "use_cases": [
-                "Solving optimization problems in computer networks and telecommunications",
-                "Implementing routing algorithms in computer networks",
-                "Data compression and encoding algorithms",
-                "Scheduling and resource allocation problems",
-                "Approximating solutions to NP-hard problems"
+                "Solving optimization problems like minimum spanning tree, shortest path, and data compression",
+                "Implementing algorithms like Kruskal's algorithm, Dijkstra's algorithm, and Huffman coding",
+                "Solving problems related to network design and resource allocation",
+                "Optimizing algorithms for better performance",
+                "Working with large datasets that don't fit in memory"
             ],
             "code_example": """
-# Python example of Greedy Algorithm (Dijkstra's Algorithm)
+# Python example of greedy algorithm (Dijkstra's algorithm) for shortest path
 
 import heapq
 
@@ -931,15 +864,19 @@ def dijkstra(graph, start):
     distances = {vertex: float('infinity') for vertex in graph}
     distances[start] = 0
     priority_queue = [(0, start)]
+
     while priority_queue:
         current_distance, current_vertex = heapq.heappop(priority_queue)
+
         if current_distance > distances[current_vertex]:
             continue
+
         for neighbor, weight in graph[current_vertex].items():
             distance = current_distance + weight
             if distance < distances[neighbor]:
                 distances[neighbor] = distance
                 heapq.heappush(priority_queue, (distance, neighbor))
+
     return distances
 
 # Usage
@@ -949,51 +886,54 @@ graph = {
     'C': {'A': 4, 'B': 2, 'D': 1},
     'D': {'B': 5, 'C': 1}
 }
+
 start_vertex = 'A'
-print(dijkstra(graph, start_vertex))  # Output: {'A': 0, 'B': 1, 'C': 3, 'D': 4}
+shortest_distances = dijkstra(graph, start_vertex)
+print(f"Shortest distances from vertex {start_vertex}: {shortest_distances}")
             """
         },
         14: {
             "title": "Divide and Conquer",
-            "description": "Divide and Conquer is an algorithmic technique that involves breaking a problem into smaller subproblems, solving them independently, and combining their solutions to solve the original problem.",
+            "description": "Divide and conquer is an algorithmic technique that involves breaking down a problem into smaller subproblems, solving them independently, and combining their solutions to solve the original problem.",
             "key_points": [
-                "Divide and Conquer breaks a problem into smaller subproblems.",
-                "It solves each subproblem independently and combines their solutions.",
-                "Common divide and conquer algorithms include Binary Search, Merge Sort, Quick Sort, and the Fast Fourier Transform (FFT).",
-                "Divide and Conquer often has a recursive implementation.",
-                "It is suitable for problems that can be divided into independent subproblems."
+                "Divide and conquer algorithms divide the problem into smaller subproblems.",
+                "They solve each subproblem independently and combine their solutions.",
+                "Common divide and conquer algorithms include binary search, merge sort, quick sort, and fast Fourier transform.",
+                "Divide and conquer algorithms have a time complexity of O(n log n) for many problems."
             ],
             "operations": [
-                {"name": "Binary Search", "time_complexity":
-                    "O(log n)", "description": "Finding a specific element in a sorted array by repeatedly dividing the search space in half."},
-                {"name": "Merge Sort", "time_complexity":
-                    "O(n log n)", "description": "Sorting an array by dividing it into two halves, sorting them recursively, and merging them."},
-                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case",
-                 "description": "Sorting an array by selecting a 'pivot' element and partitioning the array around it."},
-                {"name": "Fast Fourier Transform (FFT)", "time_complexity": "O(n log n)",
-                 "description": "Computing the Discrete Fourier Transform (DFT) of a sequence of complex numbers."}
+                {"name": "Binary Search", "time_complexity": "O(log n)", "description": "Divide the sorted array into halves and search in the appropriate half."},
+                {"name": "Merge Sort", "time_complexity": "O(n log n)", "description": "Divide the array into two halves, sort them recursively, and merge them."},
+                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case", "description": "Choose a pivot element, partition the array around the pivot, and recursively sort the sub-arrays."},
+                {"name": "Fast Fourier Transform", "time_complexity": "O(n log n)", "description": "Compute the discrete Fourier transform of a sequence using a divide and conquer approach."}
             ],
             "use_cases": [
-                "Solving mathematical and scientific problems",
-                "Implementing efficient sorting and searching algorithms",
-                "Solving optimization problems in computer networks and telecommunications",
-                "Implementing algorithms for machine learning and artificial intelligence",
-                "Solving combinatorial problems in computer science"
+                "Solving problems that can be divided into smaller subproblems",
+                "Implementing algorithms like binary search, merge sort, quick sort, and fast Fourier transform",
+                "Solving problems related to searching, sorting, and numerical analysis",
+                "Optimizing algorithms for better performance",
+                "Working with large datasets that don't fit in memory"
             ],
             "code_example": """
-# Python example of Divide and Conquer (Merge Sort)
+# Python example of divide and conquer (merge sort)
 
 def merge_sort(arr):
     if len(arr) <= 1:
         return arr
+
     mid = len(arr) // 2
-    left_half = merge_sort(arr[:mid])
-    right_half = merge_sort(arr[mid:])
+    left_half = arr[:mid]
+    right_half = arr[mid:]
+
+    left_half = merge_sort(left_half)
+    right_half = merge_sort(right_half)
+
     return merge(left_half, right_half)
 
 def merge(left, right):
     merged = []
     i = j = 0
+
     while i < len(left) and j < len(right):
         if left[i] < right[j]:
             merged.append(left[i])
@@ -1001,8 +941,10 @@ def merge(left, right):
         else:
             merged.append(right[j])
             j += 1
+
     merged.extend(left[i:])
     merged.extend(right[j:])
+
     return merged
 
 # Usage
@@ -1014,97 +956,95 @@ print(merge_sort(arr))  # Output: [11, 12, 22, 25, 34, 64, 90]
             "title": "Backtracking",
             "description": "Backtracking is an algorithmic technique that involves exploring all possible solutions to a problem by trying out different options and undoing choices that lead to a dead end.",
             "key_points": [
-                "Backtracking explores all possible solutions to a problem.",
-                "It tries out different options and undoes choices that lead to a dead end.",
-                "Common backtracking problems include the N-Queens Problem, the Knight's Tour Problem, and the Traveling Salesman Problem.",
-                "Backtracking often has a recursive implementation.",
-                "It is suitable for problems with a large search space and a small solution space."
+                "Backtracking algorithms explore all possible solutions to a problem.",
+                "They try out different options and undo choices that lead to a dead end.",
+                "Common backtracking problems include the N-Queens problem, the Knight's tour problem, and the Sudoku puzzle.",
+                "Backtracking algorithms have an exponential time complexity in the worst case."
             ],
             "operations": [
-                {"name": "N-Queens Problem", "time_complexity":
-                    "O(n!)", "description": "Placing n queens on an n x n chessboard such that no two queens threaten each other."},
-                {"name": "Knight's Tour Problem", "time_complexity":
-                    "O(8^(n^2))", "description": "Finding a closed tour for a knight on an n x n chessboard that visits every square exactly once."},
-                {"name": "Traveling Salesman Problem", "time_complexity":
-                    "O(n!)", "description": "Finding the shortest possible tour that visits a given set of cities and returns to the starting city."}
+                {"name": "N-Queens Problem", "time_complexity": "O(n!)", "description": "Place N queens on an NxN chessboard such that no two queens threaten each other."},
+                {"name": "Knight's Tour Problem", "time_complexity": "O(8^n)", "description": "Find a closed tour for a knight on an NxN chessboard that visits every square exactly once."},
+                {"name": "Sudoku Puzzle", "time_complexity": "O(9^n)", "description": "Fill a 9x9 grid with digits so that each column, row, and 3x3 subgrid contains all digits from 1 to 9."}
             ],
             "use_cases": [
-                "Solving combinatorial problems in computer science",
-                "Implementing game-playing algorithms",
-                "Solving optimization problems in computer networks and telecommunications",
-                "Implementing algorithms for machine learning and artificial intelligence",
-                "Solving puzzles and problems in mathematics and science"
+                "Solving problems that involve exploring all possible solutions",
+                "Implementing algorithms like the N-Queens problem, the Knight's tour problem, and the Sudoku puzzle",
+                "Solving problems related to combinatorics and game theory",
+                "Optimizing algorithms for better performance",
+                "Working with large datasets that don't fit in memory"
             ],
             "code_example": """
-# Python example of Backtracking (N-Queens Problem)
+# Python example of backtracking (N-Queens problem)
 
 def is_safe(board, row, col, n):
     for i in range(row):
         if board[i][col] == 1:
             return False
+
     for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
         if board[i][j] == 1:
             return False
+
     for i, j in zip(range(row, -1, -1), range(col, n)):
         if board[i][j] == 1:
             return False
+
     return True
 
 def solve_n_queens(board, row, n):
     if row == n:
         return True
+
     for col in range(n):
         if is_safe(board, row, col, n):
             board[row][col] = 1
+
             if solve_n_queens(board, row + 1, n):
                 return True
+
             board[row][col] = 0
+
     return False
 
 def print_board(board):
     for row in board:
-        print(' '.join(['Q' if cell == 1 else '.' for cell in row]))
+        print(" ".join(str(cell) for cell in row))
 
 # Usage
 n = 4
 board = [[0] * n for _ in range(n)]
+
 if solve_n_queens(board, 0, n):
-print_board(board)
+    print_board(board)
 else:
     print("No solution exists.")
             """
         },
         16: {
             "title": "Graph Algorithms",
-            "description": "Graph algorithms are used to solve problems related to graphs, which are abstract data structures consisting of vertices (or nodes) and edges that connect these vertices.",
+            "description": "Graph algorithms are used to solve problems related to graphs, which are abstract data structures that represent relationships between objects. Graph algorithms can be used for various applications such as network analysis, routing, and optimization.",
             "key_points": [
                 "Graph algorithms are used to solve problems related to graphs.",
-                "Common graph algorithms include Breadth-First Search (BFS), Depth-First Search (DFS), Dijkstra's Algorithm, Bellman-Ford Algorithm, and Kruskal's Algorithm.",
-                "Graph algorithms are used in various applications, including network analysis, route planning, and social network analysis.",
-                "They are also used in computer science for solving optimization problems and implementing data structures.",
-                "Graph algorithms can be implemented using various data structures, such as adjacency matrices and adjacency lists."
+                "Common graph algorithms include breadth-first search (BFS), depth-first search (DFS), Dijkstra's algorithm, Bellman-Ford algorithm, and Kruskal's algorithm.",
+                "Graph algorithms have different time complexities for different scenarios.",
+                "The choice of graph algorithm depends on the problem at hand and the characteristics of the graph."
             ],
             "operations": [
-                {"name": "Breadth-First Search (BFS)", "time_complexity": "O(V + E)",
-                 "description": "Exploring all vertices at the current depth before moving to the next depth."},
-                {"name": "Depth-First Search (DFS)", "time_complexity": "O(V + E)",
-                 "description": "Exploring as far as possible along each branch before backtracking."},
-                {"name": "Dijkstra's Algorithm", "time_complexity":
-                    "O(E log V)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph."},
-                {"name": "Bellman-Ford Algorithm", "time_complexity":
-                    "O(VE)", "description": "Finding the shortest path from a source vertex to all other vertices in a weighted graph, even if there are negative weights."},
-                {"name": "Kruskal's Algorithm", "time_complexity":
-                    "O(E log E)", "description": "Finding the minimum spanning tree of a connected, undirected graph."}
+                {"name": "Breadth-First Search (BFS)", "time_complexity": "O(|V| + |E|)", "description": "Explore all vertices of a graph in breadth-first order, starting from a given source vertex."},
+                {"name": "Depth-First Search (DFS)", "time_complexity": "O(|V| + |E|)", "description": "Explore as far as possible along each branch before backtracking, starting from a given source vertex."},
+                {"name": "Dijkstra's Algorithm", "time_complexity": "O((|V| + |E|) log |V|)", "description": "Find the shortest path from a source vertex to all other vertices in a weighted graph."},
+                {"name": "Bellman-Ford Algorithm", "time_complexity": "O(|V| * |E|)", "description": "Find the shortest path from a source vertex to all other vertices in a weighted graph, even if there are negative weights."},
+                {"name": "Kruskal's Algorithm", "time_complexity": "O(|E| log |E|)", "description": "Find the minimum spanning tree of a connected, undirected graph."}
             ],
             "use_cases": [
                 "Network analysis and routing",
-                "Social network analysis and recommendation systems",
-                "Pathfinding and route planning",
-                "Optimization problems in computer networks and telecommunications",
-                "Implementing data structures like disjoint sets and priority queues"
+                "Optimization problems like shortest path and minimum spanning tree",
+                "Solving problems related to connectivity and reachability",
+                "Implementing algorithms like BFS, DFS, Dijkstra's algorithm, Bellman-Ford algorithm, and Kruskal's algorithm",
+                "Working with large datasets that don't fit in memory"
             ],
             "code_example": """
-# Python example of Graph Algorithm (Breadth-First Search)
+# Python example of graph algorithm (Breadth-First Search)
 
 from collections import deque
 
@@ -1112,9 +1052,11 @@ def bfs(graph, start):
     visited = set()
     queue = deque([start])
     visited.add(start)
+
     while queue:
         vertex = queue.popleft()
         print(vertex, end=' ')
+
         for neighbor in graph[vertex]:
             if neighbor not in visited:
                 visited.add(neighbor)
@@ -1129,40 +1071,35 @@ graph = {
     'E': ['B', 'F'],
     'F': ['C', 'E']
 }
+
 start_vertex = 'A'
-print("BFS traversal starting from vertex", start_vertex)
-bfs(graph, start_vertex)  # Output: A B C D E F
+print(f"BFS traversal starting from vertex {start_vertex}:")
+bfs(graph, start_vertex)
             """
         },
         17: {
             "title": "Recursive Algorithms",
-            "description": "Recursive algorithms are algorithms that solve problems by breaking them down into smaller subproblems and solving each subproblem recursively.",
+            "description": "Recursive algorithms are algorithms that solve a problem by breaking it down into smaller subproblems and solving each subproblem recursively. Recursive algorithms are often simpler and more elegant than iterative algorithms.",
             "key_points": [
-                "Recursive algorithms solve problems by breaking them down into smaller subproblems.",
-                "They solve each subproblem recursively and combine their solutions to solve the original problem.",
-                "Common recursive algorithms include Factorial, Fibonacci, Tower of Hanoi, and Quick Sort.",
-                "Recursive algorithms often have a simple and elegant implementation.",
-                "They are suitable for problems that can be divided into independent subproblems."
+                "Recursive algorithms solve a problem by breaking it down into smaller subproblems.",
+                "They solve each subproblem recursively until a base case is reached.",
+                "Common recursive algorithms include factorial, Fibonacci, and Tower of Hanoi.",
+                "Recursive algorithms have a time complexity of O(2^n) in the worst case."
             ],
             "operations": [
-                {"name": "Factorial", "time_complexity":
-                    "O(n)", "description": "Calculating the factorial of a non-negative integer n."},
-                {"name": "Fibonacci", "time_complexity":
-                    "O(2^n)", "description": "Calculating the nth Fibonacci number."},
-                {"name": "Tower of Hanoi", "time_complexity":
-                    "O(2^n)", "description": "Solving the Tower of Hanoi problem with n disks."},
-                {"name": "Quick Sort", "time_complexity": "O(n log n) average, O(n^2) worst case",
-                 "description": "Sorting an array by selecting a 'pivot' element and partitioning the array around it."}
+                {"name": "Factorial", "time_complexity": "O(n)", "description": "Calculate the factorial of a non-negative integer n."},
+                {"name": "Fibonacci", "time_complexity": "O(2^n)", "description": "Calculate the nth Fibonacci number."},
+                {"name": "Tower of Hanoi", "time_complexity": "O(2^n)", "description": "Move a stack of disks from one peg to another, with the constraint that smaller disks must always be on top of larger ones."}
             ],
             "use_cases": [
-                "Solving mathematical and scientific problems",
-                "Implementing efficient sorting and searching algorithms",
-                "Solving optimization problems in computer networks and telecommunications",
-                "Implementing algorithms for machine learning and artificial intelligence",
-                "Solving combinatorial problems in computer science"
+                "Solving problems that can be broken down into smaller subproblems",
+                "Implementing algorithms like factorial, Fibonacci, and Tower of Hanoi",
+                "Solving problems related to combinatorics and recursion",
+                "Optimizing algorithms for better performance",
+                "Working with large datasets that don't fit in memory"
             ],
             "code_example": """
-# Python example of Recursive Algorithm (Factorial)
+# Python example of recursive algorithm (Factorial)
 
 def factorial(n):
     if n == 0:
@@ -1172,53 +1109,53 @@ def factorial(n):
 
 # Usage
 n = 5
-print(factorial(n))  # Output: 120
+print(f"Factorial of {n} is: {factorial(n)}")
             """
         },
         18: {
             "title": "String Algorithms",
-            "description": "String algorithms are used to manipulate and process strings, which are sequences of characters.",
+            "description": "String algorithms are used to manipulate and process strings, which are sequences of characters. String algorithms can be used for various applications such as text editing, pattern matching, and data compression.",
             "key_points": [
-                "String algorithms manipulate and process strings.",
-                "Common string algorithms include string matching (e.g., Knuth-Morris-Pratt, Boyer-Moore), string searching (e.g., Rabin-Karp), and regular expressions.",
-                "String algorithms are used in various applications, including text editing, data compression, and natural language processing.",
-                "They are also used in computer science for implementing data structures like tries and suffix arrays.",
-                "String algorithms can be implemented using various techniques, such as brute force, dynamic programming, and finite automata."
+                "String algorithms are used to manipulate and process strings.",
+                "Common string algorithms include string matching (Knuth-Morris-Pratt, Boyer-Moore), string searching (Rabin-Karp), and string manipulation (substring search, string concatenation).",
+                "String algorithms have different time complexities for different scenarios.",
+                "The choice of string algorithm depends on the problem at hand and the characteristics of the strings."
             ],
             "operations": [
-                {"name": "Knuth-Morris-Pratt (KMP)", "time_complexity": "O(n + m)",
-                 "description": "Finding the first occurrence of a pattern in a text."},
-                {"name": "Boyer-Moore", "time_complexity": "O(n/m) average, O(nm) worst case",
-                 "description": "Finding the first occurrence of a pattern in a text."},
-                {"name": "Rabin-Karp", "time_complexity": "O(nm) average, O(n^2) worst case",
-                 "description": "Finding the first occurrence of a pattern in a text."},
-                {"name": "Regular Expressions", "time_complexity": "O(nm) average, O(n^2) worst case",
-                 "description": "Matching patterns in strings using regular expressions."}
+                {"name": "Knuth-Morris-Pratt (KMP) Algorithm", "time_complexity": "O(n + m)", "description": "Find the first occurrence of a pattern in a text."},
+                {"name": "Boyer-Moore Algorithm", "time_complexity": "O(n/m) average, O(nm) worst case", "description": "Find the first occurrence of a pattern in a text."},
+                {"name": "Rabin-Karp Algorithm", "time_complexity": "O(nm) average, O(n^2) worst case", "description": "Find the first occurrence of a pattern in a text."},
+                {"name": "Substring Search", "time_complexity": "O(nm)", "description": "Find all occurrences of a substring in a string."},
+                {"name": "String Concatenation", "time_complexity": "O(n + m)", "description": "Concatenate two strings."}
             ],
             "use_cases": [
-                "Text editing and processing",
+                "Text editing and manipulation",
+                "Pattern matching and searching",
                 "Data compression and encoding",
-                "Natural language processing and information retrieval",
-                "Implementing data structures like tries and suffix arrays",
-                "Pattern matching and searching in strings"
+                "Implementing algorithms like KMP, Boyer-Moore, Rabin-Karp, and string manipulation",
+                "Working with large datasets that don't fit in memory"
             ],
             "code_example": """
-# Python example of String Algorithm (Knuth-Morris-Pratt)
+# Python example of string algorithm (Knuth-Morris-Pratt)
 
 def kmp_search(text, pattern):
     n = len(text)
     m = len(pattern)
     lps = [0] * m
     j = 0
+
     compute_lps(pattern, m, lps)
+
     i = 0
     while i < n:
         if pattern[j] == text[i]:
             i += 1
             j += 1
-            if j == m:
-                print("Pattern found at index", i-j)
-                j = lps[j-1]
+
+        if j == m:
+            print(f"Pattern found at index {i-j}")
+            j = lps[j-1]
+
         elif i < n and pattern[j] != text[i]:
             if j != 0:
                 j = lps[j-1]
@@ -1228,6 +1165,7 @@ def kmp_search(text, pattern):
 def compute_lps(pattern, m, lps):
     length = 0
     i = 1
+
     while i < m:
         if pattern[i] == pattern[length]:
             length += 1
@@ -1243,22 +1181,23 @@ def compute_lps(pattern, m, lps):
 # Usage
 text = "ABABDABACDABABCABAB"
 pattern = "ABABCABAB"
-kmp_search(text, pattern)  # Output: Pattern found at index 10
+kmp_search(text, pattern)
             """
         }
     }
     lesson = lessons.get(lesson_id)
     if lesson is None:
         return HTMLResponse("<p>Lesson not found.</p>")
-    return templates.TemplateResponse("lesson_content.html", {"request": request, "lesson": lesson})
+    return templates.TemplateResponse("lesson_content.html", {"request": request, "lesson": lesson, "user": user})
 
+# ... rest of the code ...
 
 def format_title(quiz_id: str) -> str:
     return ' '.join(word.capitalize() for word in quiz_id.replace('_', ' ').split())
 
 
 @app.get("/quiz/{quiz_id}", response_class=HTMLResponse)
-async def read_quiz(request: Request, quiz_id: str):
+async def read_quiz(request: Request, quiz_id: str, user: Optional[dict] = Depends(get_optional_user)):
     formatted_title = format_title(quiz_id)
     quiz_data = {
         "arrays": array_quiz,
@@ -1303,12 +1242,13 @@ async def read_quiz(request: Request, quiz_id: str):
         "request": request,
         "quiz": quiz,
         "quiz_id": quiz_id,
-        "encoded_questions": encoded_questions
+        "encoded_questions": encoded_questions,
+        "user": user
     })
 
 
 @app.get("/quiz/{quiz_id}/question/{question_index}", response_class=HTMLResponse)
-async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None):
+async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None, user: Optional[dict] = Depends(get_optional_user)):
     try:
         if encoded_questions:
             questions = json.loads(base64.b64decode(
@@ -1338,7 +1278,8 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
                 "question_index": question_index,
                 "quiz_id": quiz_id,
                 "total_questions": len(questions),
-                "encoded_questions": encoded_questions
+                "encoded_questions": encoded_questions,
+                "user": user
             })
         return HTMLResponse("Quiz completed.")
     except Exception as e:
@@ -1346,7 +1287,7 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
 
 
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
-async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(None), encoded_questions: str = Form(None)):
+async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(None), encoded_questions: str = Form(None), user: Optional[dict] = Depends(get_optional_user)):
     logger.debug(
         f"Received submission for quiz {quiz_id}, question {question_index}")
     logger.debug(f"Answer: {answer}")
@@ -1372,7 +1313,8 @@ async def submit_quiz(request: Request, quiz_id: str, question_index: int, answe
             "next_question_index": next_question_index,
             "total_questions": total_questions,
             "quiz_id": quiz_id,
-            "encoded_questions": encoded_questions
+            "encoded_questions": encoded_questions,
+            "user": user
         })
 
         response = f"""
@@ -1388,7 +1330,7 @@ async def submit_quiz(request: Request, quiz_id: str, question_index: int, answe
 
 
 @app.post("/quiz/{quiz_id}")
-async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...)):
+async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...), user: Optional[dict] = Depends(get_optional_user)):
     correct_answers = {
         1: "O(1)",  # Expected answer for quiz 1
         2: "Linked List",  # Expected answer for quiz 2
@@ -1401,14 +1343,14 @@ async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...)):
             "Arrays" if quiz_id == 1 else "Linked Lists"
         ) + " and try again."
     question = correct_answers.get(quiz_id, "Quiz question not found.")
-    return templates.TemplateResponse("quiz.html", {"request": request, "quiz_id": quiz_id, "question": question, "feedback": feedback})
+    return templates.TemplateResponse("quiz.html", {"request": request, "quiz_id": quiz_id, "question": question, "feedback": feedback, "user": user})
 
 
 @app.get("/lessons", response_class=HTMLResponse)
-async def list_lessons(request: Request):
-    return templates.TemplateResponse("lessons.html", {"request": request})
+async def list_lessons(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("lessons.html", {"request": request, "user": user})
 
 
 @app.get("/quizzes", response_class=HTMLResponse)
-async def list_quizzes(request: Request):
-    return templates.TemplateResponse("quizzes.html", {"request": request})
+async def list_quizzes(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("quizzes.html", {"request": request, "user": user})

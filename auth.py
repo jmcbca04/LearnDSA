@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, HTTPException, status, Depends
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from jose import jwt
 import os
 from datetime import datetime, timedelta
@@ -31,12 +31,14 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
 
 @router.get('/login')
 async def login(request: Request):
@@ -46,6 +48,7 @@ async def login(request: Request):
     logger.debug(f"Redirect URI: {GOOGLE_REDIRECT_URI}")
     logger.debug(f"Client ID: {GOOGLE_CLIENT_ID}")
     return RedirectResponse(url=auth_url)
+
 
 @router.get('/auth')
 async def auth(request: Request):
@@ -58,7 +61,8 @@ async def auth(request: Request):
     logger.debug(f"Received error: {error}")
 
     if error:
-        raise HTTPException(status_code=400, detail=f"Authorization error: {error}")
+        raise HTTPException(
+            status_code=400, detail=f"Authorization error: {error}")
 
     if not code or not state:
         raise HTTPException(status_code=400, detail="Missing code or state")
@@ -79,12 +83,16 @@ async def auth(request: Request):
         response = await client.post(token_url, data=data)
         if response.status_code != 200:
             error_detail = response.json()
-            logger.error(f"Failed to retrieve token. Status: {response.status_code}, Details: {error_detail}")
+            logger.error(
+                f"Failed to retrieve token. Status: {response.status_code}, Details: {error_detail}")
             logger.error(f"Response headers: {response.headers}")
-            logger.error(f"Full response content: {response.text}")  # Add this line
+            # Add this line
+            logger.error(f"Full response content: {response.text}")
             if response.status_code == 401:
-                raise HTTPException(status_code=400, detail=f"Unauthorized. Check your client ID and secret. Error: {error_detail}")
-            raise HTTPException(status_code=400, detail=f"Failed to retrieve token: {error_detail}")
+                raise HTTPException(
+                    status_code=400, detail=f"Unauthorized. Check your client ID and secret. Error: {error_detail}")
+            raise HTTPException(
+                status_code=400, detail=f"Failed to retrieve token: {error_detail}")
         token_data = response.json()
 
     # Get user info
@@ -95,8 +103,10 @@ async def auth(request: Request):
         response = await client.get(user_info_url, headers=headers)
         if response.status_code != 200:
             error_detail = response.json()
-            logger.error(f"Failed to retrieve user info. Status: {response.status_code}, Details: {error_detail}")
-            raise HTTPException(status_code=400, detail=f"Failed to retrieve user info: {error_detail}")
+            logger.error(
+                f"Failed to retrieve user info. Status: {response.status_code}, Details: {error_detail}")
+            raise HTTPException(
+                status_code=400, detail=f"Failed to retrieve user info: {error_detail}")
         user_info = response.json()
 
     # After successfully authenticating the user:
@@ -105,10 +115,14 @@ async def auth(request: Request):
     await record_user_login(user_email)
 
     # Create a JWT token
-    access_token = create_access_token({"sub": user_info["email"], "name": user_info.get("name"), "email": user_info["email"]})
-    
-    redirect_url = f"/?token={access_token}"
-    return RedirectResponse(url=redirect_url)
+    access_token = create_access_token(
+        data={"sub": user_info["email"], "name": user_info["name"]})
+
+    # Set the token as a cookie and redirect to the profile page
+    response = RedirectResponse(url="/profile")
+    response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
+    return response
+
 
 @router.get('/protected')
 async def protected_route(token: str = Depends(oauth2_scheme)):
@@ -116,9 +130,12 @@ async def protected_route(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         return {"user": payload}
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
     except jwt.JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
 
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -132,3 +149,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     logger.info(f"User logged in: {user.email}")
     await record_user_login(user.email)
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get('/logout')
+async def logout(request: Request):
+    response = RedirectResponse(url="/")
+    response.delete_cookie(key="access_token")
+    return response

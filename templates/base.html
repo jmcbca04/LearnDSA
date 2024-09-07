@@ -18,8 +18,13 @@
                 <li><a href="{{ url_for('read_home') }}">Home</a></li>
                 <li><a href="{{ url_for('list_lessons') }}">Lessons</a></li>
                 <li><a href="{{ url_for('list_quizzes') }}">Quizzes</a></li>
-                <li><span id="userInfo"></span></li>
-                <li><a href="#" id="loginLogout">Sign in</a></li>
+                {% if user %}
+                    <li><span>Welcome, {{ user.name }}!</span></li>
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Sign in</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>
@@ -40,6 +45,7 @@
         const token = localStorage.getItem('token');
         const userInfo = document.getElementById('userInfo');
         const loginLogout = document.getElementById('loginLogout');
+        const profileLink = document.getElementById('profileLink');
         
         console.log("UpdateUI called, token:", token ? "exists" : "doesn't exist");
         
@@ -54,17 +60,20 @@
                 userInfo.textContent = `Welcome, ${data.user.name}!`;
                 loginLogout.textContent = 'Logout';
                 loginLogout.onclick = handleLogout;
+                profileLink.style.display = 'inline-block';
             })
             .catch(() => {
                 localStorage.removeItem('token');
                 userInfo.textContent = '';
                 loginLogout.textContent = 'Sign in';
                 loginLogout.onclick = showLoginModal;
+                profileLink.style.display = 'none';
             });
         } else {
             userInfo.textContent = '';
             loginLogout.textContent = 'Sign in';
             loginLogout.onclick = showLoginModal;
+            profileLink.style.display = 'none';
         }
     }
 
