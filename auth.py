@@ -149,3 +149,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     logger.info(f"User logged in: {user.email}")
     await record_user_login(user.email)
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get('/logout')
+async def logout(request: Request):
+    response = RedirectResponse(url="/")
+    response.delete_cookie(key="access_token")
+    return response

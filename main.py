@@ -72,7 +72,7 @@ async def user_stats():
     return {"total_users": user_count, "total_logins": total_logins}
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def read_home(request: Request, user: Optional[dict] = Depends(get_optional_user)):
     return templates.TemplateResponse("home.html", {"request": request, "user": user})
 
@@ -809,12 +809,12 @@ def bubble_sort(arr):
 
 
 @app.get("/lessons", response_class=HTMLResponse)
-async def list_lessons(request: Request):
-    return templates.TemplateResponse("lessons.html", {"request": request})
+async def list_lessons(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("lessons.html", {"request": request, "user": user})
 
 
 @app.get("/quiz/{quiz_id}", response_class=HTMLResponse)
-async def quiz(request: Request, quiz_id: int):
+async def quiz(request: Request, quiz_id: int, user: Optional[dict] = Depends(get_optional_user)):
     quiz_data = {
         1: array_quiz,
         2: linked_list_quiz,
@@ -839,13 +839,13 @@ async def quiz(request: Request, quiz_id: int):
     if quiz_id in quiz_data:
         quiz = quiz_data[quiz_id]
         random.shuffle(quiz["questions"])
-        return templates.TemplateResponse("quiz.html", {"request": request, "quiz": quiz})
+        return templates.TemplateResponse("quiz.html", {"request": request, "quiz": quiz, "user": user})
     else:
         raise HTTPException(status_code=404, detail="Quiz not found")
 
 
 @app.post("/submit-quiz")
-async def submit_quiz(request: Request, answers: dict = Form(...)):
+async def submit_quiz(request: Request, answers: dict = Form(...), user: Optional[dict] = Depends(get_optional_user)):
     quiz_id = int(answers.pop("quiz_id"))
     quiz_data = {
         1: array_quiz,
@@ -872,69 +872,69 @@ async def submit_quiz(request: Request, answers: dict = Form(...)):
         quiz = quiz_data[quiz_id]
         correct_answers = {q["id"]: q["correct_answer"] for q in quiz["questions"]}
         score = sum(correct_answers[int(q_id)] == answers[q_id] for q_id in answers)
-        return templates.TemplateResponse("quiz_results.html", {"request": request, "score": score, "total": len(quiz["questions"])})
+        return templates.TemplateResponse("quiz_results.html", {"request": request, "score": score, "total": len(quiz["questions"]), "user": user})
     else:
         raise HTTPException(status_code=404, detail="Quiz not found")
 
 
 @app.get("/quizzes", response_class=HTMLResponse)
-async def quizzes(request: Request):
-    return templates.TemplateResponse("quizzes.html", {"request": request})
+async def quizzes(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("quizzes.html", {"request": request, "user": user})
 
 
 @app.get("/algorithms", response_class=HTMLResponse)
-async def algorithms(request: Request):
-    return templates.TemplateResponse("algorithms.html", {"request": request})
+async def algorithms(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("algorithms.html", {"request": request, "user": user})
 
 
 @app.get("/data-structures", response_class=HTMLResponse)
-async def data_structures(request: Request):
-    return templates.TemplateResponse("data_structures.html", {"request": request})
+async def data_structures(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("data_structures.html", {"request": request, "user": user})
 
 
 @app.get("/about", response_class=HTMLResponse)
-async def about(request: Request):
-    return templates.TemplateResponse("about.html", {"request": request})
+async def about(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("about.html", {"request": request, "user": user})
 
 
 @app.get("/contact", response_class=HTMLResponse)
-async def contact(request: Request):
-    return templates.TemplateResponse("contact.html", {"request": request})
+async def contact(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("contact.html", {"request": request, "user": user})
 
 
 @app.get("/resources", response_class=HTMLResponse)
-async def resources(request: Request):
-    return templates.TemplateResponse("resources.html", {"request": request})
+async def resources(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("resources.html", {"request": request, "user": user})
 
 
 @app.get("/faq", response_class=HTMLResponse)
-async def faq(request: Request):
-    return templates.TemplateResponse("faq.html", {"request": request})
+async def faq(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("faq.html", {"request": request, "user": user})
 
 
 @app.get("/privacy-policy", response_class=HTMLResponse)
-async def privacy_policy(request: Request):
-    return templates.TemplateResponse("privacy_policy.html", {"request": request})
+async def privacy_policy(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("privacy_policy.html", {"request": request, "user": user})
 
 
 @app.get("/terms-of-service", response_class=HTMLResponse)
-async def terms_of_service(request: Request):
-    return templates.TemplateResponse("terms_of_service.html", {"request": request})
+async def terms_of_service(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("terms_of_service.html", {"request": request, "user": user})
 
 
 @app.get("/cookie-policy", response_class=HTMLResponse)
-async def cookie_policy(request: Request):
-    return templates.TemplateResponse("cookie_policy.html", {"request": request})
+async def cookie_policy(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("cookie_policy.html", {"request": request, "user": user})
 
 
 @app.get("/accessibility-statement", response_class=HTMLResponse)
-async def accessibility_statement(request: Request):
-    return templates.TemplateResponse("accessibility_statement.html", {"request": request})
+async def accessibility_statement(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("accessibility_statement.html", {"request": request, "user": user})
 
 
 @app.get("/sitemap", response_class=HTMLResponse)
-async def sitemap(request: Request):
-    return templates.TemplateResponse("sitemap.html", {"request": request})
+async def sitemap(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("sitemap.html", {"request": request, "user": user})
 
 
 @app.get("/robots.txt")
@@ -1249,7 +1249,7 @@ kmp_search(text, pattern)  # Output: Pattern found at index 10
     lesson = lessons.get(lesson_id)
     if lesson is None:
         return HTMLResponse("<p>Lesson not found.</p>")
-    return templates.TemplateResponse("lesson_content.html", {"request": request, "lesson": lesson})
+    return templates.TemplateResponse("lesson_content.html", {"request": request, "lesson": lesson, "user": user})
 
 
 def format_title(quiz_id: str) -> str:
@@ -1257,7 +1257,7 @@ def format_title(quiz_id: str) -> str:
 
 
 @app.get("/quiz/{quiz_id}", response_class=HTMLResponse)
-async def read_quiz(request: Request, quiz_id: str):
+async def read_quiz(request: Request, quiz_id: str, user: Optional[dict] = Depends(get_optional_user)):
     formatted_title = format_title(quiz_id)
     quiz_data = {
         "arrays": array_quiz,
@@ -1302,12 +1302,13 @@ async def read_quiz(request: Request, quiz_id: str):
         "request": request,
         "quiz": quiz,
         "quiz_id": quiz_id,
-        "encoded_questions": encoded_questions
+        "encoded_questions": encoded_questions,
+        "user": user
     })
 
 
 @app.get("/quiz/{quiz_id}/question/{question_index}", response_class=HTMLResponse)
-async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None):
+async def get_question(request: Request, quiz_id: str, question_index: int, encoded_questions: str = None, user: Optional[dict] = Depends(get_optional_user)):
     try:
         if encoded_questions:
             questions = json.loads(base64.b64decode(
@@ -1337,7 +1338,8 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
                 "question_index": question_index,
                 "quiz_id": quiz_id,
                 "total_questions": len(questions),
-                "encoded_questions": encoded_questions
+                "encoded_questions": encoded_questions,
+                "user": user
             })
         return HTMLResponse("Quiz completed.")
     except Exception as e:
@@ -1345,7 +1347,7 @@ async def get_question(request: Request, quiz_id: str, question_index: int, enco
 
 
 @app.post("/quiz/{quiz_id}/submit/{question_index}", response_class=HTMLResponse)
-async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(None), encoded_questions: str = Form(None)):
+async def submit_quiz(request: Request, quiz_id: str, question_index: int, answer: str = Form(None), encoded_questions: str = Form(None), user: Optional[dict] = Depends(get_optional_user)):
     logger.debug(
         f"Received submission for quiz {quiz_id}, question {question_index}")
     logger.debug(f"Answer: {answer}")
@@ -1371,7 +1373,8 @@ async def submit_quiz(request: Request, quiz_id: str, question_index: int, answe
             "next_question_index": next_question_index,
             "total_questions": total_questions,
             "quiz_id": quiz_id,
-            "encoded_questions": encoded_questions
+            "encoded_questions": encoded_questions,
+            "user": user
         })
 
         response = f"""
@@ -1387,7 +1390,7 @@ async def submit_quiz(request: Request, quiz_id: str, question_index: int, answe
 
 
 @app.post("/quiz/{quiz_id}")
-async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...)):
+async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...), user: Optional[dict] = Depends(get_optional_user)):
     correct_answers = {
         1: "O(1)",  # Expected answer for quiz 1
         2: "Linked List",  # Expected answer for quiz 2
@@ -1400,14 +1403,14 @@ async def submit_quiz(request: Request, quiz_id: int, answer: str = Form(...)):
             "Arrays" if quiz_id == 1 else "Linked Lists"
         ) + " and try again."
     question = correct_answers.get(quiz_id, "Quiz question not found.")
-    return templates.TemplateResponse("quiz.html", {"request": request, "quiz_id": quiz_id, "question": question, "feedback": feedback})
+    return templates.TemplateResponse("quiz.html", {"request": request, "quiz_id": quiz_id, "question": question, "feedback": feedback, "user": user})
 
 
 @app.get("/lessons", response_class=HTMLResponse)
-async def list_lessons(request: Request):
-    return templates.TemplateResponse("lessons.html", {"request": request})
+async def list_lessons(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("lessons.html", {"request": request, "user": user})
 
 
 @app.get("/quizzes", response_class=HTMLResponse)
-async def list_quizzes(request: Request):
-    return templates.TemplateResponse("quizzes.html", {"request": request})
+async def list_quizzes(request: Request, user: Optional[dict] = Depends(get_optional_user)):
+    return templates.TemplateResponse("quizzes.html", {"request": request, "user": user})
